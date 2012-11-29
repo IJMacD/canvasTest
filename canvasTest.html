@@ -145,7 +145,7 @@ window.onload = function(){
 	GameObjectManager.prototype.toHTML = function() {
 		var html = this.name;
 		if(this.objects.length > 1)
-			html += "(" + this.objects.length + " items)";
+			html += " (" + this.objects.length + " items)";
 		if(this.components.length){
 			html += "<ul>";
 			for(var i=0;i<this.components.length;i++)
@@ -391,6 +391,29 @@ window.onload = function(){
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
 	gameRoot.addObject(sInputSystem);
+
+	var MassiveObject = GameObject.extend("MassiveObject");
+	MassiveObject.prototype._init = function(x,y) {
+		this.mass = random(0.5,1);
+		this.addComponent(new DrawComponent(ctx, 12, "#ff0"));
+		this.addComponent(new MoveComponent());
+		this.addComponent(new SolidComponent(24,24,"sun"));
+	};
+
+	var RedBall = GameObject.extend("RedBall");
+	RedBall.prototype._init = function(x,y) {
+		this.vx = 0;
+		this.vy = 0;
+		this.mass = 0.1;
+		//this.addComponent(new RandomMoveComponent());
+
+		this.addComponent(new CollisionComponent());
+		this.addComponent(new MoveComponent());
+		this.addComponent(new SolidComponent(ballSize*2,ballSize*2,"ball"));
+		this.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
+		this.addComponent(new DebugDrawPathComponent(ctx));
+	};
+
 	var firstSunIndex = gameRoot.objects.length;
 	var suns = [];
 	var redBalls = [];
@@ -401,17 +424,12 @@ window.onload = function(){
 		addRedBall();
 	}
 	var pointMass = null;
+
 	function addSun(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
-		var massiveObject = new GameObject(x,y);
-		massiveObject.vx = 0;
-		massiveObject.vy = 0;
-		massiveObject.mass = random(0.5,1);
-		massiveObject.addComponent(new DrawComponent(ctx, 12, "#ff0"));
-		massiveObject.addComponent(new MoveComponent());
+		var massiveObject = new MassiveObject(x,y);
 		massiveObject.addComponent(new BounceComponent(12,12,width, height));
-		massiveObject.addComponent(new SolidComponent(24,24,"sun"));
 		gameRoot.addObjectAt(firstSunIndex,massiveObject);
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
@@ -425,20 +443,13 @@ window.onload = function(){
 	function addRedBall(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
-		var redBall = new GameObject(x,y);
+		var redBall = new RedBall(x,y);
 		redBall.vx = (Math.random()-0.5)*0.5;
 		redBall.vy = (Math.random()-0.5)*0.5;
-		redBall.mass = 0.1;
-		//redBall.addComponent(new RandomMoveComponent());
 		for(var j = 0; j < suns.length; j++){
 			redBall.addComponent(new PointGravityComponent(suns[j]));
 		}
 		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
-		redBall.addComponent(new CollisionComponent());
-		redBall.addComponent(new MoveComponent());
-		redBall.addComponent(new SolidComponent(ballSize*2,ballSize*2,"ball"));
-		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
-		redBall.addComponent(new DebugDrawPathComponent(ctx));
 		gameRoot.addObject(redBall);
 		redBalls.push(redBall);
 	}
