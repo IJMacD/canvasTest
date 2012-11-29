@@ -6,6 +6,7 @@
 <canvas style="border:1px solid" width="1000" height="600"></canvas><br>
 <button class="btn">Fullscreen</button>
 <button class="btn">Add Sun</button>
+<button class="btn">Add 10 Balls</button>
 <button class="btn">Enable Debug Lines</button>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
@@ -98,6 +99,10 @@ window.onload = function(){
 	GameObjectManager.prototype.addObject = function(object){
 		if(object instanceof GameObject)
 			this.objects.push(object);
+	};
+	GameObjectManager.prototype.addObjectAt = function(index, object){
+		if(object instanceof GameObject)
+			this.objects.splice(index,0,object);
 	};
 	GameObjectManager.prototype.removeObject = function(object){
 		if(!object instanceof GameObject)
@@ -254,6 +259,8 @@ window.onload = function(){
 					parent.y > sCollisionSystem.bounds[i][1] &&
 					parent.y < sCollisionSystem.bounds[i][3]
 				);
+			if(collision)
+				break;
 		}
 
 		if(collision)
@@ -315,12 +322,13 @@ window.onload = function(){
 	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
+	var firstSunIndex = gameRoot.objects.length;
 	var suns = [];
 	var redBalls = [];
 	//for(var i = 0; i < 1; i++){
 		addSun(width/2,height/2);
 	//}
-	for(var i = 0; i < 20; i++){
+	for(var i = 0; i < 100; i++){
 		addRedBall();
 	}
 	function addSun(x,y){
@@ -334,7 +342,7 @@ window.onload = function(){
 		massiveObject.addComponent(new MoveComponent());
 		massiveObject.addComponent(new BounceComponent(12,12,width, height));
 		massiveObject.addComponent(new SolidComponent(24,24));
-		gameRoot.addObject(massiveObject);
+		gameRoot.addObjectAt(firstSunIndex,massiveObject);
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
 		for(var i = 0; i < suns.length; i++){
@@ -355,8 +363,9 @@ window.onload = function(){
 			redBall.addComponent(new PointGravityComponent(suns[j]));
 		}
 		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
-		redBall.addComponent(new MoveComponent());
 		redBall.addComponent(new CollisionComponent());
+		redBall.addComponent(new MoveComponent());
+		redBall.addComponent(new SolidComponent(ballSize*2,ballSize*2));
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		redBall.addComponent(new DebugDrawPathComponent(ctx));
 		gameRoot.addObject(redBall);
@@ -400,6 +409,10 @@ window.onload = function(){
 	document.getElementsByTagName('button')[1].onclick = function(){
 		addSun();
 	};
+	document.getElementsByTagName('button')[2].onclick = function(){
+		for(var i = 0; i < 10; i++)
+			addRedBall();
+	};
 	function enableDebugLines(){
 		debugLines = true;
 		this.innerText = "Disable Debug Lines";
@@ -410,7 +423,7 @@ window.onload = function(){
 		this.innerText = "Enable Debug Lines";
 		this.onclick = enableDebugLines;
 	}
-	document.getElementsByTagName('button')[2].onclick = enableDebugLines;
+	document.getElementsByTagName('button')[3].onclick = enableDebugLines;
 }
 </script>
 </html>
