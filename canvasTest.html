@@ -92,6 +92,7 @@ window.onload = function(){
 	var GameObjectManager = GameObject.extend();
 	GameObjectManager.prototype._init = function(){
 		this.objects = [];
+		this.toBeRemoved = [];
 	};
 	GameObjectManager.prototype.addObject = function(object){
 		if(object instanceof GameObject)
@@ -100,20 +101,25 @@ window.onload = function(){
 	GameObjectManager.prototype.removeObject = function(object){
 		if(!object instanceof GameObject)
 			return;
-		var i = 0,
-			l = this.objects.length;
-		for(;i<l;i++){
-			if(this.objects[i] == object){
-				this.objects.remove(i);
-				return;
-			}
-		}
+		this.toBeRemoved.push(object);
 	};
 	GameObjectManager.prototype.update = function(delta){
 		var i = 0,
-			l = this.objects.length;
+			l = this.objects.length,
+			m = this.toBeRemoved.length,
+			j = 0;
 		for(;i<l;i++)
 			this.objects[i].update(delta);
+
+		for(;j<m;j++){
+			i = 0;
+			for(;i<l;i++){
+				if(this.objects[i] == this.toBeRemoved[j]){
+					this.objects.remove(i);
+					return;
+				}
+			}
+		}
 	};
 	var CanvasManager = GameObject.extend();
 	CanvasManager.prototype._init = function(context){
@@ -208,6 +214,17 @@ window.onload = function(){
 		parent.vx += Math.sin(theta)*0.0001*this.object.mass*delta;
 		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
 	};
+	var CollisionComponent = GameComponent.extend();
+	CollisionComponent.prototype._init = function(x,y,w,h){
+		this.bounds=[x,y,x+w,y+h];
+	}
+	CollisionComponent.prototype.update = function(parent, delta) {
+		var collision = (parent.x > this.bounds[0] && parent.x < this.bounds[2]
+				&& parent.y > this.bounds[1] && parent.y < this.bounds[3]);
+
+		if(collision)
+			gameRoot.removeObject(parent);
+	};
 
 	// -----------------
 	// Create Game Graph
@@ -267,6 +284,7 @@ window.onload = function(){
 		}
 		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		redBall.addComponent(new MoveComponent());
+		redBall.addComponent(new CollisionComponent(width/2,height/2,12,12));
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		gameRoot.addObject(redBall);
 		redBalls.push(redBall);
