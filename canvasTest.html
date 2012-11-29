@@ -5,10 +5,16 @@
 <body>
 <canvas style="border:1px solid" width="1000" height="600"></canvas><br>
 <button class="btn">Fullscreen</button>
+<button class="btn">Remove Sun</button>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
 <script>
 (function(){
+	Array.prototype.remove = function(from, to) {
+		var rest = this.slice((to || from) + 1 || this.length);
+		this.length = from < 0 ? this.length + from : from;
+		return this.push.apply(this, rest);
+	};
 	function drawCircle(ctx, x, y, r){
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -90,6 +96,18 @@ window.onload = function(){
 	GameObjectManager.prototype.addObject = function(object){
 		if(object instanceof GameObject)
 			this.objects.push(object);
+	};
+	GameObjectManager.prototype.removeObject = function(object){
+		if(!object instanceof GameObject)
+			return;
+		var i = 0,
+			l = this.objects.length;
+		for(;i<l;i++){
+			if(this.objects[i] == object){
+				this.objects.remove(i);
+				return;
+			}
+		}
 	};
 	GameObjectManager.prototype.update = function(delta){
 		var i = 0,
@@ -251,8 +269,14 @@ window.onload = function(){
 	}
 	requestAnimationFrame(loop);
 
+	// -----
+	// UI
+	// -----
 	document.getElementsByTagName('button')[0].onclick = function(){
 		ctx.canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+	};
+	document.getElementsByTagName('button')[1].onclick = function(){
+		gameRoot.removeObject(massiveObject2);
 	};
 }
 </script>
