@@ -10,14 +10,14 @@ CanvasRenderingContext2D.prototype.fillCircle = function(x, y, radius){
 	this.arc(x, y, radius, 0, Math.PI * 2);
 	this.fill();
 };
-CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, w, h) {
+CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, xr, yr) {
   var kappa = .5522848;
-      ox = (w / 2) * kappa, // control point offset horizontal
-      oy = (h / 2) * kappa, // control point offset vertical
-      xe = x + w / 2,       // x-end
-      ye = y + h / 2,       // y-end
-      xs = x - w / 2,       // x-start
-      ys = y - h / 2;       // y-start
+      ox = xr * kappa, // control point offset horizontal
+      oy = yr * kappa, // control point offset vertical
+      xe = x + xr;       // x-end
+      ye = y + yr,       // y-end
+      xs = x - xr,       // x-start
+      ys = y - yr;       // y-start
 
   this.beginPath();
   this.moveTo(xs, y);
@@ -31,14 +31,14 @@ CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, w, h) {
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		f = function(t){
-			var y = 370-Math.abs(Math.sin(t/500)*350);
+			var y = 390-(Math.abs(Math.sin(t/500)*390)*(400/(t+1)));
 			ctx.fillStyle = "#fff";
 			ctx.fillRect(0,0,200,400);
 			ctx.fillStyle = "#f00";
-			if(y<365)
+			if(y<380)
 				ctx.fillCircle(100,y,20);
 			else
-				ctx.fillEllipse(100,y,50,30);
+				ctx.fillEllipse(100,y,20-(380-y),20+(380-y));
 			ctx.fillStyle = "rgba(255,255,255,0.5)";
 			ctx.fillCircle(105,y-5,10);
 			requestAnimationFrame(f);
