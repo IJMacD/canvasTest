@@ -8,6 +8,8 @@
 <button class="btn">Add Sun</button>
 <button class="btn">Add 10 Balls</button>
 <button class="btn">Enable Debug Lines</button>
+<button class="btn">Refresh Tree</button>
+<div></div>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
 <script>
@@ -54,12 +56,13 @@
 		drawEllipse(this, x, y, xr, yr);
 		this.fill();
 	};
-	Function.prototype.extend = function() {
+	Function.prototype.extend = function(name) {
 		function Class() {
 			if (!(this instanceof Class))
 				throw('Constructor called without "new"');
 			if ('_init' in this)
 				this._init.apply(this, arguments);
+			this.name = name;
 		}
 		Function.prototype.extend.nonconstructor.prototype = this.prototype;
 		Class.prototype = new Function.prototype.extend.nonconstructor();
@@ -71,7 +74,7 @@ window.onload = function(){
 	// -----------------
 	// Define Components
 	// -----------------
-	var GameObject = Object.extend();
+	var GameObject = Object.extend("GameObject");
 	GameObject.prototype._init = function(x, y){
 		this.components = [];
 		this.x = x;
@@ -91,7 +94,17 @@ window.onload = function(){
 		for(;i<l;i++)
 			this.components[i].update(this, delta);
 	};
-	var GameObjectManager = GameObject.extend();
+	GameObject.prototype.toHTML = function() {
+		var html = this.name;
+		if(this.components.length){
+			html += "<ul>";
+			for(var i=0;i<this.components.length;i++)
+				html += "<li>"+this.components[i].toHTML();
+			html += "</ul>";
+		}
+		return html;
+	};
+	var GameObjectManager = GameObject.extend("GameObjectManager");
 	GameObjectManager.prototype._init = function(){
 		this.objects = [];
 		this.toBeRemoved = [];
@@ -127,7 +140,24 @@ window.onload = function(){
 			}
 		}
 	};
-	var CanvasManager = GameObject.extend();
+	GameObjectManager.prototype.toHTML = function() {
+		var html = this.name;
+		if(this.components.length){
+			html += "<ul>";
+			for(var i=0;i<this.components.length;i++)
+				html += "<li>"+this.components[i].toHTML();
+			html += "</ul>";
+		}
+		if(this.objects.length){
+			html += "<ul>";
+			for(var i=0;i<this.objects.length;i++)
+				html += "<li>"+this.objects[i].toHTML();
+			html += "</ul>";
+		}
+		return html;
+	};
+
+	var CanvasManager = GameObject.extend("CanvasManager");
 	CanvasManager.prototype._init = function(context){
 		this.context = context;
 	};
@@ -135,16 +165,19 @@ window.onload = function(){
 		this.context.fillStyle = "#fff";
 		this.context.fillRect(0,0,this.context.canvas.width,this.context.canvas.height);
 	}
-	var GameComponent = Object.extend();
+	var GameComponent = Object.extend("GameComponent");
 	GameComponent.prototype.update = function(parent, delta){};
-	var MoveComponent = GameComponent.extend();
+	GameComponent.prototype.toHTML = function() {
+		return this.name;
+	};
+	var MoveComponent = GameComponent.extend("MoveComponent");
 	MoveComponent.prototype.update = function(parent, delta) {
 		if(parent.vx)
 			parent.x += parent.vx * delta;
 		if(parent.vy)
 			parent.y += parent.vy * delta;
 	};
-	var DrawComponent = GameComponent.extend();
+	var DrawComponent = GameComponent.extend("DrawComponent");
 	DrawComponent.prototype._init = function(context, size, colour){
 		this.context = context;
 		this.size = size;
@@ -156,7 +189,7 @@ window.onload = function(){
 		this.context.fillStyle = "rgba(255,255,255,0.7)";
 		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
 	};
-	var DebugDrawPathComponent = GameComponent.extend();
+	var DebugDrawPathComponent = GameComponent.extend("DebugDrawPathComponent");
 	DebugDrawPathComponent.prototype._init = function(context){
 		this.context = context;
 		this.path = [];
@@ -200,7 +233,7 @@ window.onload = function(){
 			this.pathIndex = 0;
 		}
 	};
-	var BounceComponent = GameComponent.extend();
+	var BounceComponent = GameComponent.extend("BounceComponent");
 	BounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
 		this.ax = width / 2;
 		this.ay = height / 2;
@@ -226,20 +259,20 @@ window.onload = function(){
 			parent.vy = -parent.vy*coef;
 		}
 	};
-	var GravityComponent = GameComponent.extend();
+	var GravityComponent = GameComponent.extend("GravityComponent");
 	GravityComponent.prototype.update = function(parent, delta) {
 		if(typeof parent.vy == "undefined")
 			parent.vy = 0;
 		parent.vy += 0.0001*delta;
 	};
-	var RandomMoveComponent = GameComponent.extend();
+	var RandomMoveComponent = GameComponent.extend("RandomMoveComponent");
 	RandomMoveComponent.prototype.update = function(parent, delta) {
 		if(Math.random()<0.001){
 			parent.vx = Math.random()-0.5;
 			parent.vy = Math.random()-0.5;
 		}
 	};
-	var PointGravityComponent = GameComponent.extend();
+	var PointGravityComponent = GameComponent.extend("PointGravityComponent");
 	PointGravityComponent.prototype._init = function(object) {
 		this.object = object;
 	};
@@ -250,7 +283,7 @@ window.onload = function(){
 		parent.vx += Math.sin(theta)*0.0001*this.object.mass*delta;
 		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
 	};
-	var CollisionComponent = GameComponent.extend();
+	var CollisionComponent = GameComponent.extend("CollisionComponent");
 	CollisionComponent.prototype.update = function(parent, delta) {
 		for(var i = 0; i < sCollisionSystem.bounds.length; i++){
 			var collision = (
@@ -275,7 +308,7 @@ window.onload = function(){
 			}
 		}
 	};
-	var CollisionSystem = GameObject.extend();
+	var CollisionSystem = GameObject.extend("CollisionSystem");
 	CollisionSystem.prototype._init = function() {
 		GameObject.prototype._init();
 		this.bounds = [];
@@ -287,7 +320,7 @@ window.onload = function(){
 	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,type){
 		this.bounds.push([x-w/2,y-h/2,x+w/2,y+h/2,type]);
 	};
-	var SolidComponent = GameComponent.extend();
+	var SolidComponent = GameComponent.extend("SolidComponent");
 	SolidComponent.prototype._init = function(width, height, type) {
 		this.width = width;
 		this.height = height;
@@ -296,7 +329,7 @@ window.onload = function(){
 	SolidComponent.prototype.update = function(parent, delta) {
 		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height,this.type);
 	};
-	var DebugDrawBoundsComponent = GameComponent.extend();
+	var DebugDrawBoundsComponent = GameComponent.extend("DebugDrawBoundsComponent");
 	DebugDrawBoundsComponent.prototype._init = function(context){
 		this.context = context;
 	}
@@ -307,7 +340,7 @@ window.onload = function(){
 			this.context.strokeRect(bounds[0],bounds[1],bounds[2]-bounds[0],bounds[3]-bounds[1]);
 		}
 	};
-	var InputSystem = GameObject.extend();
+	var InputSystem = GameObject.extend("InputSystem");
 	InputSystem.prototype._init = function() {
 		this.hasInput = false;
 		this.lastInput = null;
@@ -319,7 +352,7 @@ window.onload = function(){
 		this.hasInput = true;
 		this.lastInput = {x: x, y: y};
 	}
-	var MoveToClickComponent = GameComponent.extend();
+	var MoveToClickComponent = GameComponent.extend("MoveToClickComponent");
 	MoveToClickComponent.prototype.update = function(parent, delta) {
 		if(sInputSystem.hasInput){
 			parent.x = sInputSystem.lastInput.x;
@@ -472,6 +505,10 @@ window.onload = function(){
 			gameRoot.addObject(pointMass);
 		}
 		sInputSystem.click(event.clientX, event.clientY);
+	}
+	var div = document.getElementsByTagName('div')[0];
+	document.getElementsByTagName('button')[4].onclick = function(){
+		div.innerHTML = gameRoot.toHTML();
 	}
 }
 </script>
