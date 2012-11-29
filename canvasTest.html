@@ -283,14 +283,23 @@ window.onload = function(){
 	//for(var i = 0; i < 1; i++){
 		addSun(width/2,height/2);
 	//}
-	addRedBall(width/2+100,height/2);
-	var firstBall = redBalls[0];
-	firstBall.vx = 0;
-	firstBall.vy = 0.1;
-	addMoon(firstBall);
 	for(var i = 0; i < 50; i++){
 		addRedBall();
 	}
+	var firstBall = redBalls[0];
+	firstBall.vx = 0;
+	firstBall.vy = 0.1;
+	addMoon(
+		addMoon(
+			addMoon(
+				addMoon(
+					addMoon(
+						addMoon(firstBall)
+					)
+				)
+			)
+		)
+	);
 	function addSun(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
@@ -331,8 +340,9 @@ window.onload = function(){
 	}
 	function addMoon(obj){
 		var moon = new GameObject(obj.x+10,obj.y+10);
-		moon.vx = obj.vx;
-		moon.vy = obj.vy;
+		moon.vx = 0;
+		moon.vy = 0;
+		moon.mass = 1;
 		moon.addComponent(new PointGravityComponent(obj));
 		for(var j = 0; j < suns.length; j++){
 			//moon.addComponent(new PointGravityComponent(suns[j]));
@@ -340,8 +350,9 @@ window.onload = function(){
 		moon.addComponent(new MoveComponent());
 		moon.addComponent(new CollisionComponent(width/2,height/2,12,12));
 		moon.addComponent(new DrawComponent(ctx, 2, "#000"));
-		//moon.addComponent(new DebugDrawComponent(ctx));
+		moon.addComponent(new DebugDrawComponent(ctx));
 		gameRoot.addObject(moon);
+		return moon;
 	}
 
 	// --------------------
