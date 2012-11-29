@@ -258,13 +258,22 @@ window.onload = function(){
 					parent.x < sCollisionSystem.bounds[i][2] &&
 					parent.y > sCollisionSystem.bounds[i][1] &&
 					parent.y < sCollisionSystem.bounds[i][3]
-				);
+				) ? sCollisionSystem.bounds[i][4] : false;
 			if(collision)
 				break;
 		}
 
-		if(collision)
-			gameRoot.removeObject(parent);
+		if(collision){
+			switch(collision){
+				case "sun":
+					gameRoot.removeObject(parent);
+					break;
+				case "ball":
+					parent.vx = -parent.vx*0.9;
+					parent.vy = -parent.vy*0.9;
+					break;
+			}
+		}
 	};
 	var CollisionSystem = GameObject.extend();
 	CollisionSystem.prototype._init = function() {
@@ -275,16 +284,17 @@ window.onload = function(){
 		GameObject.prototype.update(delta);
 		this.bounds = [];
 	};
-	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h){
-		this.bounds.push([x-w/2,y-h/2,x+w/2,y+h/2]);
+	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,type){
+		this.bounds.push([x-w/2,y-h/2,x+w/2,y+h/2,type]);
 	};
 	var SolidComponent = GameComponent.extend();
-	SolidComponent.prototype._init = function(width, height) {
+	SolidComponent.prototype._init = function(width, height, type) {
 		this.width = width;
 		this.height = height;
+		this.type = type;
 	};
 	SolidComponent.prototype.update = function(parent, delta) {
-		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height);
+		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height,this.type);
 	};
 	var DebugDrawBoundsComponent = GameComponent.extend();
 	DebugDrawBoundsComponent.prototype._init = function(context){
@@ -319,7 +329,7 @@ window.onload = function(){
 	    },
 	    debugLines = false,
 	    sCollisionSystem = new CollisionSystem();
-	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
+	//sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
 	var firstSunIndex = gameRoot.objects.length;
@@ -341,7 +351,7 @@ window.onload = function(){
 		massiveObject.addComponent(new DrawComponent(ctx, 12, "#ff0"));
 		massiveObject.addComponent(new MoveComponent());
 		massiveObject.addComponent(new BounceComponent(12,12,width, height));
-		massiveObject.addComponent(new SolidComponent(24,24));
+		massiveObject.addComponent(new SolidComponent(24,24,"sun"));
 		gameRoot.addObjectAt(firstSunIndex,massiveObject);
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
@@ -365,7 +375,7 @@ window.onload = function(){
 		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		redBall.addComponent(new CollisionComponent());
 		redBall.addComponent(new MoveComponent());
-		redBall.addComponent(new SolidComponent(ballSize*2,ballSize*2));
+		redBall.addComponent(new SolidComponent(ballSize*2,ballSize*2,"ball"));
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		redBall.addComponent(new DebugDrawPathComponent(ctx));
 		gameRoot.addObject(redBall);
