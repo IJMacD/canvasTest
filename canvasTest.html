@@ -57,6 +57,8 @@ window.onload = function(){
 		this.components = [];
 		this.x = x;
 		this.y = y;
+		this.vx = 0;
+		this.vy = 0;
 	};
 	GameObject.prototype.addComponent = function(component){
 		if(component instanceof GameComponent)
@@ -109,6 +111,11 @@ window.onload = function(){
 		this.context.fillCircle(parent.x,parent.y,this.size);
 		this.context.fillStyle = "rgba(255,255,255,0.7)";
 		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
+		this.context.strokeStyle = "rgba(0,128,255,0.7)";
+		this.context.beginPath();
+		this.context.moveTo(parent.x, parent.y);
+		this.context.lineTo(parent.x+parent.vx*100, parent.y+parent.vy*100);
+		this.context.stroke();
 	};
 	var BounceComponent = GameComponent.extend();
 	BounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
