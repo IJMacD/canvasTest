@@ -30,15 +30,21 @@ CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, xr, yr) {
 }
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
+		canvasHeight = ctx.canvas.height,
+		ballRadius = 20,
+		a1 = canvasHeight - ballRadius,
+		a2 = canvasHeight - ballRadius*2,
+		speed = 1/500,
+		decay = 500;
 		f = function(t){
-			var y = 390-(Math.abs(Math.sin(t/500)*390)*(400/(t+1)));
+			var y = a1-(Math.abs(Math.sin(t*speed)*a2)*(decay/(t+1)));
 			ctx.fillStyle = "#fff";
 			ctx.fillRect(0,0,200,400);
 			ctx.fillStyle = "#f00";
-			if(y<380)
+			if(y<a1)
 				ctx.fillCircle(100,y,20);
 			else
-				ctx.fillEllipse(100,y,20-(380-y),20+(380-y));
+				ctx.fillEllipse(100,y,ballRadius-(a1-y),ballRadius+(a1-y));
 			ctx.fillStyle = "rgba(255,255,255,0.5)";
 			ctx.fillCircle(105,y-5,10);
 			requestAnimationFrame(f);
