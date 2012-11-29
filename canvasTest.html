@@ -6,7 +6,14 @@ CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 	this.stroke();
 };
 window.onload = function(){
-	setTimeout(function(){document.getElementsByTagName('canvas')[0].getContext('2d').strokeCircle(50,50,50);},1000);
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange=function() {
+		if (xhr.readyState==4) {
+			document.getElementsByTagName('canvas')[0].getContext('2d').strokeCircle(50,50,50);
+		}
+	}
+	xhr.open("GET","#",true);
+	xhr.send();
 }
 </script>
 <canvas height="100" width="100"></canvas>
