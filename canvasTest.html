@@ -6,6 +6,7 @@
 <canvas style="border:1px solid" width="1000" height="600"></canvas><br>
 <button class="btn">Fullscreen</button>
 <button class="btn">Add Sun</button>
+<button class="btn">Enable Debug Lines</button>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
 <script>
@@ -158,37 +159,41 @@ window.onload = function(){
 		this.pathIndex = 0;
 	};
 	DebugDrawComponent.prototype.update = function(parent, delta) {
-		var skip = this.pathIndex % this.pathSize;
-		this.context.strokeStyle = "#CCC";
-		this.context.beginPath();
-		this.context.moveTo(parent.x, parent.y);
-		if(this.pathIndex > this.pathSize){
-			for(var i = this.pathSize-1;i>=0;i--){
-				var index = (i + skip + this.pathSize) % this.pathSize;
-				this.context.lineTo(this.path[index][0],this.path[index][1]);
+		if(debugLines){
+			var skip = this.pathIndex % this.pathSize;
+			this.context.strokeStyle = "#CCC";
+			this.context.beginPath();
+			this.context.moveTo(parent.x, parent.y);
+			if(this.pathIndex > this.pathSize){
+				for(var i = this.pathSize-1;i>=0;i--){
+					var index = (i + skip + this.pathSize) % this.pathSize;
+					this.context.lineTo(this.path[index][0],this.path[index][1]);
+				}
+			}else{
+				for(var i = this.pathIndex-1;i>=0;i--){
+					this.context.lineTo(this.path[i][0],this.path[i][1]);
+				}
 			}
+			this.context.stroke();
+			this.pathIndex++;
+			this.path[skip] = [parent.x,parent.y];
+			this.context.strokeStyle = "rgba(0,128,255,0.7)";
+			this.context.beginPath();
+			this.context.moveTo(parent.x, parent.y);
+			this.context.lineTo(parent.x+parent.vx*100, parent.y+parent.vy*100);
+			this.context.stroke();
+			var ax = (parent.vx - parent.lastVx)/delta,
+				ay = (parent.vy - parent.lastVy)/delta;
+			parent.lastVx = parent.vx;
+			parent.lastVy = parent.vy;
+			this.context.strokeStyle = "rgba(0,255,0,0.7)";
+			this.context.beginPath();
+			this.context.moveTo(parent.x, parent.y);
+			this.context.lineTo(parent.x+ax*4e5, parent.y+ay*4e5);
+			this.context.stroke();
 		}else{
-			for(var i = this.pathIndex-1;i>=0;i--){
-				this.context.lineTo(this.path[i][0],this.path[i][1]);
-			}
+			this.pathIndex = 0;
 		}
-		this.context.stroke();
-		this.pathIndex++;
-		this.path[skip] = [parent.x,parent.y];
-		this.context.strokeStyle = "rgba(0,128,255,0.7)";
-		this.context.beginPath();
-		this.context.moveTo(parent.x, parent.y);
-		this.context.lineTo(parent.x+parent.vx*100, parent.y+parent.vy*100);
-		this.context.stroke();
-		var ax = (parent.vx - parent.lastVx)/delta,
-			ay = (parent.vy - parent.lastVy)/delta;
-		parent.lastVx = parent.vx;
-		parent.lastVy = parent.vy;
-		this.context.strokeStyle = "rgba(0,255,0,0.7)";
-		this.context.beginPath();
-		this.context.moveTo(parent.x, parent.y);
-		this.context.lineTo(parent.x+ax*4e5, parent.y+ay*4e5);
-		this.context.stroke();
 	};
 	var BounceComponent = GameComponent.extend();
 	BounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
@@ -270,7 +275,8 @@ window.onload = function(){
 	            typeof mean != "undefined")
 	            r = sd * r + mean;
 	        return r;
-	    }
+	    },
+	    debugLines = false;
 	gameRoot.addObject(new CanvasManager(ctx));
 	var suns = [];
 	var redBalls = [];
@@ -359,6 +365,17 @@ window.onload = function(){
 	document.getElementsByTagName('button')[1].onclick = function(){
 		addSun();
 	};
+	function enableDebugLines(){
+		debugLines = true;
+		this.innerText = "Disable Debug Lines";
+		this.onclick = disableDebugLines;
+	}
+	function disableDebugLines(){
+		debugLines = false;
+		this.innerText = "Enable Debug Lines";
+		this.onclick = enableDebugLines;
+	}
+	document.getElementsByTagName('button')[2].onclick = enableDebugLines;
 }
 </script>
 </html>
