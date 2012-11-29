@@ -1,33 +1,44 @@
 <html>
 <script>
-CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
-	this.beginPath();
-	this.arc(x, y, radius, 0, Math.PI * 2);
-	this.stroke();
-};
-CanvasRenderingContext2D.prototype.fillCircle = function(x, y, radius){
-	this.beginPath();
-	this.arc(x, y, radius, 0, Math.PI * 2);
-	this.fill();
-};
-CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, xr, yr) {
-  var kappa = .5522848;
-      ox = xr * kappa, // control point offset horizontal
-      oy = yr * kappa, // control point offset vertical
-      xe = x + xr;       // x-end
-      ye = y + yr,       // y-end
-      xs = x - xr,       // x-start
-      ys = y - yr;       // y-start
+(function(){
+	function drawCircle(ctx, x, y, r){
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, Math.PI * 2);
+	}
+	function drawEllipse(ctx, x, y, xr, yr){
+	  var kappa = .5522848;
+	      ox = xr * kappa, // control point offset horizontal
+	      oy = yr * kappa, // control point offset vertical
+	      xe = x + xr;       // x-end
+	      ye = y + yr,       // y-end
+	      xs = x - xr,       // x-start
+	      ys = y - yr;       // y-start
 
-  this.beginPath();
-  this.moveTo(xs, y);
-  this.bezierCurveTo(xs, y - oy, x - ox, ys, x, ys);
-  this.bezierCurveTo(x + ox, ys, xe, y - oy, xe, y);
-  this.bezierCurveTo(xe, y + oy, x + ox, ye, x, ye);
-  this.bezierCurveTo(x - ox, ye, xs, y + oy, xs, y);
-  this.closePath();
-  this.fill();
-}
+	  this.beginPath();
+	  this.moveTo(xs, y);
+	  this.bezierCurveTo(xs, y - oy, x - ox, ys, x, ys);
+	  this.bezierCurveTo(x + ox, ys, xe, y - oy, xe, y);
+	  this.bezierCurveTo(xe, y + oy, x + ox, ye, x, ye);
+	  this.bezierCurveTo(x - ox, ye, xs, y + oy, xs, y);
+	  this.closePath();
+	}
+	CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
+		drawCircle(this, x, y, radius);
+		this.stroke();
+	};
+	CanvasRenderingContext2D.prototype.fillCircle = function(x, y, radius){
+		drawCircle(this, x, y, radius);
+		this.fill();
+	};
+	CanvasRenderingContext2D.prototype.strokeEllipse = function(x, y, xr, yr) {
+		drawEllipse(this, x, y, xr, yr);
+	  	this.stroke();
+	}
+	CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, xr, yr) {
+		drawEllipse(this, x, y, xr, yr);
+	  	this.fill();
+	}
+})();
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		canvasHeight = ctx.canvas.height,
