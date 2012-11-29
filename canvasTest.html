@@ -102,35 +102,54 @@ window.onload = function(){
 			parent.y += parent.vy * delta;
 	};
 	var DrawComponent = GameComponent.extend();
-	DrawComponent.prototype._init = function(context){
+	DrawComponent.prototype._init = function(context, size){
 		this.context = context;
+		this.size = size;
 	};
 	DrawComponent.prototype.update = function(parent, delta) {
 		this.context.fillStyle = "#f00";
-		this.context.fillCircle(parent.x,parent.y,20);
+		this.context.fillCircle(parent.x,parent.y,this.size);
+		this.context.fillStyle = "rgba(255,255,255,0.7)";
+		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
 	};
 	var BounceComponent = GameComponent.extend();
 	BounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
-		this.width = width;
-		this.height = height;
-		this.roomWidth = roomWidth;
-		this.roomHeight = roomHeight;
+		this.ax = width / 2;
+		this.ay = height / 2;
+		this.bx = roomWidth - this.ax;
+		this.by = roomHeight - this.ay;
 	};
 	BounceComponent.prototype.update = function(parent, delta) {
-		if(parent.x < this.width || parent.x > (this.roomWidth - this.width))
-			parent.vx = - parent.vx;
-		if(parent.y < this.height || parent.y > (this.roomHeight - this.height))
-			parent.vy = - parent.vy;
+		if(parent.x < this.ax){
+			parent.x = this.ax;
+			parent.vx = -parent.vx;
+		}
+		if(parent.x > this.bx){
+			parent.x = this.bx;
+			parent.vx = -parent.vx;
+		}
+		if(parent.y < this.ay){
+			parent.y = this.ay;
+			parent.vy = -parent.vy;
+		}
+		if(parent.y > this.by){
+			parent.y = this.by;
+			parent.vy = -parent.vy;
+		}
 	};
 
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager();
-		redBall = new GameObject(20, 20);
-	redBall.addComponent(new MoveComponent());
-	redBall.addComponent(new DrawComponent(ctx));
-	redBall.addComponent(new BounceComponent(20, 20, 400, 400));
 	gameRoot.addObject(new CanvasManager(ctx));
-	gameRoot.addObject(redBall);
+	for(var i = 0; i < 10; i++){
+		var redBall = new GameObject(Math.random()*360+20, Math.random()*360+20);
+		redBall.vx = Math.random()*0.5;
+		redBall.vy = Math.random()*0.5;
+		redBall.addComponent(new MoveComponent());
+		redBall.addComponent(new DrawComponent(ctx, 10));
+		redBall.addComponent(new BounceComponent(10, 10, 400, 400));
+		gameRoot.addObject(redBall);
+	}
 
 	var lastTime = 0;
 	function loop(t){
