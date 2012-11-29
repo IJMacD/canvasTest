@@ -143,8 +143,28 @@ window.onload = function(){
 		this.context = context;
 		this.size = size;
 		this.colour = colour;
+		this.path = [];
+		this.pathSize = 1000;
+		this.pathIndex = 0;
 	};
 	DrawComponent.prototype.update = function(parent, delta) {
+		var skip = this.pathIndex % this.pathSize;
+		this.context.strokeStyle = "#CCC";
+		this.context.beginPath();
+		this.context.moveTo(parent.x, parent.y);
+		if(this.pathIndex > this.pathSize){
+			for(var i = this.pathSize-1;i>=0;i--){
+				var index = (i + skip + this.pathSize) % this.pathSize;
+				this.context.lineTo(this.path[index][0],this.path[index][1]);
+			}
+		}else{
+			for(var i = this.pathIndex-1;i>=0;i--){
+				this.context.lineTo(this.path[i][0],this.path[i][1]);
+			}
+		}
+		this.context.stroke();
+		this.pathIndex++;
+		this.path[skip] = [parent.x,parent.y];
 		this.context.fillStyle = this.colour;
 		this.context.fillCircle(parent.x,parent.y,this.size);
 		this.context.fillStyle = "rgba(255,255,255,0.7)";
