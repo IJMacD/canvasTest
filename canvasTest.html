@@ -96,6 +96,8 @@ window.onload = function(){
 	};
 	GameObject.prototype.toHTML = function() {
 		var html = this.name;
+		if(typeof this.x == "number")
+			html += " (" + this.x.toFixed() + "," + this.y.toFixed() + ")";
 		if(this.components.length){
 			html += "<ul>";
 			for(var i=0;i<this.components.length;i++)
@@ -142,6 +144,8 @@ window.onload = function(){
 	};
 	GameObjectManager.prototype.toHTML = function() {
 		var html = this.name;
+		if(this.objects.length > 1)
+			html += "(" + this.objects.length + " items)";
 		if(this.components.length){
 			html += "<ul>";
 			for(var i=0;i<this.components.length;i++)
