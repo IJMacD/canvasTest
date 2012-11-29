@@ -524,11 +524,13 @@ window.onload = function(){
 			pointMass.addComponent(new DrawComponent(ctx, 2, "#000"));
 			gameRoot.addObject(pointMass);
 		}
-		sInputSystem.click(event.clientX, event.clientY);
+		sInputSystem.click(event.offsetX, event.offsetY);
 	}
 	var div = document.getElementsByTagName('div')[0];
 	document.getElementsByTagName('button')[4].onclick = function(){
-		div.innerHTML = gameRoot.toHTML();
+		var f = function(){div.innerHTML = gameRoot.toHTML();};
+		setInterval(f,100);
+		f();
 	}
 }
 </script>
