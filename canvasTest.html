@@ -7,13 +7,18 @@ CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 };
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
-	i = 0;
-	for(;i<10;i++){
-		ctx.strokeCircle(Math.random()*100,
-							Math.random()*100,
-							Math.random()*100);
-	}
+		f = function(){
+			ctx.fillRect(0,0,500,500);
+			for(var i=0;i<10;i++){
+				ctx.strokeCircle(Math.random()*500,
+									Math.random()*500,
+									Math.random()*100);
+			}
+			requestAnimationFrame(f);
+		};
+	ctx.fillStyle = "#fff";
+	requestAnimationFrame(f);
 }
 </script>
-<canvas height="100" width="100"></canvas>
+<canvas height="500" width="500"></canvas>
 </html>
