@@ -14,13 +14,13 @@
 	      xs = x - xr,       // x-start
 	      ys = y - yr;       // y-start
 
-	  this.beginPath();
-	  this.moveTo(xs, y);
-	  this.bezierCurveTo(xs, y - oy, x - ox, ys, x, ys);
-	  this.bezierCurveTo(x + ox, ys, xe, y - oy, xe, y);
-	  this.bezierCurveTo(xe, y + oy, x + ox, ye, x, ye);
-	  this.bezierCurveTo(x - ox, ye, xs, y + oy, xs, y);
-	  this.closePath();
+	  ctx.beginPath();
+	  ctx.moveTo(xs, y);
+	  ctx.bezierCurveTo(xs, y - oy, x - ox, ys, x, ys);
+	  ctx.bezierCurveTo(x + ox, ys, xe, y - oy, xe, y);
+	  ctx.bezierCurveTo(xe, y + oy, x + ox, ye, x, ye);
+	  ctx.bezierCurveTo(x - ox, ye, xs, y + oy, xs, y);
+	  ctx.closePath();
 	}
 	CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 		drawCircle(this, x, y, radius);
@@ -48,7 +48,7 @@ window.onload = function(){
 		speed = 1/500,
 		decay = 500,
 		debugLines = true,
-		f = function(t){
+		loop = function(t){
 			var y = a1-(Math.abs(Math.sin(t*speed)*a2)*(decay/(t+1)));
 			ctx.fillStyle = "#fff";
 			ctx.fillRect(0,0,200,400);
@@ -62,6 +62,8 @@ window.onload = function(){
 				ctx.moveTo(0,ballRadius);
 				ctx.lineTo(200,ballRadius);
 				ctx.stroke();
+				ctx.strokeText("x: 100", 5, 10);
+				ctx.strokeText("y: " + y.toFixed(1), 5, 20);
 			}
 			ctx.fillStyle = "#f00";
 			if(y<a1)
@@ -69,7 +71,8 @@ window.onload = function(){
 			else
 				ctx.fillEllipse(100,y,ballRadius-(a1-y),ballRadius+(a1-y));
 			ctx.fillStyle = "rgba(255,255,255,0.5)";
-			ctx.fillCircle(105,y-5,10);
+			ctx.fillEllipse(105,y-5,12,7);
+			ctx.strokeEllipse(100,y,30,30);
 			if(debugLines){
 				ctx.strokeStyle = "rgba(0,128,255,0.7)";
 				ctx.beginPath();
@@ -80,10 +83,10 @@ window.onload = function(){
 				ctx.moveTo(100,0);
 				ctx.lineTo(100,400);
 				ctx.stroke();
-			}
-			requestAnimationFrame(f);
+			} 
+			requestAnimationFrame(loop);
 		};
-		requestAnimationFrame(f);
+		requestAnimationFrame(loop);
 }
 </script>
 <canvas height="400" width="200"></canvas>
