@@ -5,15 +5,21 @@ CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 	this.arc(x, y, radius, 0, Math.PI * 2);
 	this.stroke();
 };
+CanvasRenderingContext2D.prototype.fillCircle = function(x, y, radius){
+	this.beginPath();
+	this.arc(x, y, radius, 0, Math.PI * 2);
+	this.fill();
+};
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		f = function(t){
-			var r = (Math.sin(t/500)+1)*75+50;
+			var y = 380-Math.abs(Math.sin(t/500)*360);
+			ctx.fillStyle = "#fff";
 			ctx.fillRect(0,0,400,400);
-			ctx.strokeCircle(200,200,r);
+			ctx.fillStyle = "#f00";
+			ctx.fillCircle(200,y,20);
 			requestAnimationFrame(f);
 		};
-		ctx.fillStyle = "#fff";
 		requestAnimationFrame(f);
 }
 </script>
