@@ -118,21 +118,22 @@ window.onload = function(){
 		this.by = roomHeight - this.ay;
 	};
 	BounceComponent.prototype.update = function(parent, delta) {
+		var coef = 0.9;
 		if(parent.x < this.ax){
 			parent.x = this.ax;
-			parent.vx = -parent.vx;
+			parent.vx = -parent.vx*coef;
 		}
 		if(parent.x > this.bx){
 			parent.x = this.bx;
-			parent.vx = -parent.vx;
+			parent.vx = -parent.vx*coef;
 		}
 		if(parent.y < this.ay){
 			parent.y = this.ay;
-			parent.vy = -parent.vy;
+			parent.vy = -parent.vy*coef;
 		}
 		if(parent.y > this.by){
 			parent.y = this.by;
-			parent.vy = -parent.vy;
+			parent.vy = -parent.vy*coef;
 		}
 	};
 	var GravityComponent = GameComponent.extend();
