@@ -33,12 +33,14 @@ window.onload = function(){
 		f = function(t){
 			var y = 370-Math.abs(Math.sin(t/500)*350);
 			ctx.fillStyle = "#fff";
-			ctx.fillRect(0,0,400,400);
+			ctx.fillRect(0,0,200,400);
 			ctx.fillStyle = "#f00";
 			if(y<365)
 				ctx.fillCircle(100,y,20);
 			else
 				ctx.fillEllipse(100,y,50,30);
+			ctx.fillStyle = "rgba(255,255,255,0.5)";
+			ctx.fillCircle(105,y-5,10);
 			requestAnimationFrame(f);
 		};
 		requestAnimationFrame(f);
