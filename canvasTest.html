@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<script>
+(function(){
+	CanvasRenderingContext2D.prototype.strokeCircle = function(){
+		var width = this.canvas.width,
+			height = this.canvas.height,
+			x = width / 2,
+			y = height / 2,
+			radius = Math.min(x, y);
+		this.beginPath();
+		this.arc(x, y, radius, 0, Math.PI * 2);
+		this.stroke();
+	};
+	window.onload = function(){
+	document.getElementsByTagName('canvas')[0].getContext('2d').strokeCircle();
+	}
+})();
+</script>
+<canvas height="100" width="100"></canvas>
+</html>
