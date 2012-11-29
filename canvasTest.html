@@ -154,12 +154,23 @@ window.onload = function(){
 		gameRoot = new GameObjectManager(),
 		width = ctx.canvas.width,
 		height = ctx.canvas.height,
-		ballSize = 10;
+		ballSize = 10,
+    	// Normal dist between -1 and 1
+	    random = function(sd, mean){
+	        var d=10, r=0, i=0;
+	        for(;i<d;i++)
+	            r += Math.random();
+	        r = r / d * 2 - 1;
+	        if(typeof sd != "undefined" &&
+	            typeof mean != "undefined")
+	            r = sd * r + mean;
+	        return r;
+	    }
 	gameRoot.addObject(new CanvasManager(ctx));
 	for(var i = 0; i < 50; i++){
 		var redBall = new GameObject(
-			Math.random()*(width-ballSize*2)+ballSize,
-			Math.random()*(height-ballSize*2)+ballSize
+			random(width, width / 2),
+			random(height, height / 2)
 		);
 		//redBall.vx = Math.random()*0.5;
 		//redBall.vy = Math.random()*0.5;
