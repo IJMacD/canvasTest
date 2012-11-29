@@ -142,6 +142,13 @@ window.onload = function(){
 			parent.vy = 0;
 		parent.vy += 0.0001*delta;
 	};
+	var RandomMoveComponent = GameComponent.extend();
+	RandomMoveComponent.prototype.update = function(parent, delta) {
+		if(Math.random()<0.001){
+			parent.vx = Math.random()*0.5;
+			parent.vy = Math.random()*0.5;
+		}
+	};
 
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager();
@@ -150,6 +157,7 @@ window.onload = function(){
 		var redBall = new GameObject(Math.random()*360+20, Math.random()*360+20);
 		//redBall.vx = Math.random()*0.5;
 		//redBall.vy = Math.random()*0.5;
+		redBall.addComponent(new RandomMoveComponent());
 		redBall.addComponent(new GravityComponent());
 		redBall.addComponent(new MoveComponent());
 		redBall.addComponent(new BounceComponent(10, 10, 400, 400));
