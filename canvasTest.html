@@ -197,9 +197,12 @@ window.onload = function(){
 	        return r;
 	    }
 	gameRoot.addObject(new CanvasManager(ctx));
-	var massiveObject = new GameObject(width / 2, height / 2);
-	massiveObject.addComponent(new DrawComponent(ctx, 2, "#000"));
-	gameRoot.addObject(massiveObject);
+	var massiveObject1 = new GameObject(width * 1 / 3, height / 2);
+	massiveObject1.addComponent(new DrawComponent(ctx, 2, "#000"));
+	gameRoot.addObject(massiveObject1);
+	var massiveObject2 = new GameObject(width * 2 / 3, height / 2);
+	massiveObject2.addComponent(new DrawComponent(ctx, 2, "#000"));
+	gameRoot.addObject(massiveObject2);
 	for(var i = 0; i < 50; i++){
 		var redBall = new GameObject(
 			random(width, width / 2),
@@ -207,9 +210,10 @@ window.onload = function(){
 		);
 		redBall.vx = Math.random()-0.5;
 		redBall.vy = Math.random()-0.5;
-		redBall.addComponent(new RandomMoveComponent());
-		redBall.addComponent(new PointGravityComponent(massiveObject));
-		redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
+		//redBall.addComponent(new RandomMoveComponent());
+		redBall.addComponent(new PointGravityComponent(massiveObject1));
+		redBall.addComponent(new PointGravityComponent(massiveObject2));
+		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		redBall.addComponent(new MoveComponent());
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		gameRoot.addObject(redBall);
