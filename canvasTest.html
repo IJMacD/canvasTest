@@ -57,8 +57,6 @@ window.onload = function(){
 		this.components = [];
 		this.x = x;
 		this.y = y;
-		this.vx = 0.1;
-		this.vy = 0.2;
 	};
 	GameObject.prototype.addComponent = function(component){
 		if(component instanceof GameComponent)
@@ -137,17 +135,24 @@ window.onload = function(){
 			parent.vy = -parent.vy;
 		}
 	};
+	var GravityComponent = GameComponent.extend();
+	GravityComponent.prototype.update = function(parent, delta) {
+		if(typeof parent.vy == "undefined")
+			parent.vy = 0;
+		parent.vy += 0.0001*delta;
+	};
 
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager();
 	gameRoot.addObject(new CanvasManager(ctx));
 	for(var i = 0; i < 10; i++){
 		var redBall = new GameObject(Math.random()*360+20, Math.random()*360+20);
-		redBall.vx = Math.random()*0.5;
-		redBall.vy = Math.random()*0.5;
+		//redBall.vx = Math.random()*0.5;
+		//redBall.vy = Math.random()*0.5;
+		redBall.addComponent(new GravityComponent());
 		redBall.addComponent(new MoveComponent());
-		redBall.addComponent(new DrawComponent(ctx, 10));
 		redBall.addComponent(new BounceComponent(10, 10, 400, 400));
+		redBall.addComponent(new DrawComponent(ctx, 10));
 		gameRoot.addObject(redBall);
 	}
 
