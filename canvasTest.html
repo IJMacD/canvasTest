@@ -1,10 +1,18 @@
 <html>
+<head>
+<link rel="stylesheet" href="http://blueimp.github.com/cdn/css/bootstrap.min.css" />
+</head>
+<body>
+<canvas style="border:1px solid" width="1000" height="600"></canvas><br>
+<button class="btn">Fullscreen</button>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
 <script>
 (function(){
 	function drawCircle(ctx, x, y, r){
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, Math.PI * 2);
-	}
+	};
 	function drawEllipse(ctx, x, y, xr, yr){
 	  var kappa = .5522848;
 		  ox = xr * kappa, // control point offset horizontal
@@ -21,7 +29,7 @@
 	  ctx.bezierCurveTo(xe, y + oy, x + ox, ye, x, ye);
 	  ctx.bezierCurveTo(x - ox, ye, xs, y + oy, xs, y);
 	  ctx.closePath();
-	}
+	};
 	CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 		drawCircle(this, x, y, radius);
 		this.stroke();
@@ -33,13 +41,11 @@
 	CanvasRenderingContext2D.prototype.strokeEllipse = function(x, y, xr, yr) {
 		drawEllipse(this, x, y, xr, yr);
 		this.stroke();
-	}
+	};
 	CanvasRenderingContext2D.prototype.fillEllipse = function(x, y, xr, yr) {
 		drawEllipse(this, x, y, xr, yr);
 		this.fill();
-	}
-})();
-window.onload = function(){
+	};
 	Function.prototype.extend = function() {
 		function Class() {
 			if (!(this instanceof Class))
@@ -52,6 +58,11 @@ window.onload = function(){
 		return Class;
 	};
 	Function.prototype.extend.nonconstructor= function() {};
+})();
+window.onload = function(){
+	// -----------------
+	// Define Components
+	// -----------------
 	var GameObject = Object.extend();
 	GameObject.prototype._init = function(x, y){
 		this.components = [];
@@ -180,6 +191,9 @@ window.onload = function(){
 		parent.vy += Math.cos(theta)*0.0001*delta;
 	};
 
+	// -----------------
+	// Create Game Graph
+	// -----------------
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager(),
 		width = ctx.canvas.width,
@@ -225,14 +239,21 @@ window.onload = function(){
 		gameRoot.addObject(redBall);
 	}
 
+	// --------------------
+	// Main Game Control
+	// --------------------
 	var lastTime = 0;
 	function loop(t){
-		gameRoot.update(t - lastTime);
+		var delta = Math.min(t - lastTime, 1000);
+		gameRoot.update(delta);
 		lastTime = t;
 		requestAnimationFrame(loop);
 	}
 	requestAnimationFrame(loop);
+
+	document.getElementsByTagName('button')[0].onclick = function(){
+		ctx.canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+	};
 }
 </script>
-<canvas style="border:1px solid" height="400" width="800"></canvas>
 </html>
