@@ -108,6 +108,7 @@ window.onload = function(){
 	};
 	var GameObjectManager = GameObject.extend("GameObjectManager");
 	GameObjectManager.prototype._init = function(){
+		GameObject.prototype._init.call(this);
 		this.objects = [];
 		this.toBeRemoved = [];
 	};
@@ -163,6 +164,7 @@ window.onload = function(){
 
 	var CanvasManager = GameObject.extend("CanvasManager");
 	CanvasManager.prototype._init = function(context){
+		GameObject.prototype._init.call(this);
 		this.context = context;
 	};
 	CanvasManager.prototype.update = function(delta){
@@ -314,11 +316,11 @@ window.onload = function(){
 	};
 	var CollisionSystem = GameObject.extend("CollisionSystem");
 	CollisionSystem.prototype._init = function() {
-		GameObject.prototype._init();
+		GameObject.prototype._init.call(this);
 		this.bounds = [];
 	};
 	CollisionSystem.prototype.update = function(delta) {
-		GameObject.prototype.update(delta);
+		GameObject.prototype.update.call(this,delta);
 		this.bounds = [];
 	};
 	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,type){
@@ -346,6 +348,7 @@ window.onload = function(){
 	};
 	var InputSystem = GameObject.extend("InputSystem");
 	InputSystem.prototype._init = function() {
+		GameObject.prototype._init.call(this);
 		this.hasInput = false;
 		this.lastInput = null;
 	};
@@ -394,6 +397,7 @@ window.onload = function(){
 
 	var MassiveObject = GameObject.extend("MassiveObject");
 	MassiveObject.prototype._init = function(x,y) {
+		GameObject.prototype._init.call(this,x,y);
 		this.mass = random(0.5,1);
 		this.addComponent(new DrawComponent(ctx, 12, "#ff0"));
 		this.addComponent(new MoveComponent());
@@ -402,6 +406,7 @@ window.onload = function(){
 
 	var RedBall = GameObject.extend("RedBall");
 	RedBall.prototype._init = function(x,y) {
+		GameObject.prototype._init.call(this,x,y);
 		this.vx = 0;
 		this.vy = 0;
 		this.mass = 0.1;
