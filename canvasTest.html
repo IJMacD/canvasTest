@@ -7,18 +7,15 @@ CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 };
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
-		f = function(){
-			ctx.fillRect(0,0,500,500);
-			for(var i=0;i<10;i++){
-				ctx.strokeCircle(Math.random()*500,
-									Math.random()*500,
-									Math.random()*100);
-			}
+		f = function(t){
+			var r = Math.abs(Math.sin(t/1000)*150)+50;
+			ctx.fillRect(0,0,400,400);
+			ctx.strokeCircle(200,200,r);
 			requestAnimationFrame(f);
 		};
-	ctx.fillStyle = "#fff";
-	requestAnimationFrame(f);
+		ctx.fillStyle = "#fff";
+		requestAnimationFrame(f);
 }
 </script>
-<canvas height="500" width="500"></canvas>
+<canvas height="400" width="400"></canvas>
 </html>
