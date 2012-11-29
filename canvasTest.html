@@ -242,7 +242,7 @@ window.onload = function(){
 	};
 	var CollisionComponent = GameComponent.extend();
 	CollisionComponent.prototype._init = function(x,y,w,h){
-		this.bounds=[x,y,x+w,y+h];
+		this.bounds=[x-w,y-h,x+w,y+h];
 	}
 	CollisionComponent.prototype.update = function(parent, delta) {
 		var collision = (parent.x > this.bounds[0] && parent.x < this.bounds[2]
@@ -302,8 +302,8 @@ window.onload = function(){
 			random(width, width / 2),
 			random(height, height / 2)
 		);
-		redBall.vx = Math.random()-0.5;
-		redBall.vy = Math.random()-0.5;
+		redBall.vx = (Math.random()-0.5)*0.5;
+		redBall.vy = (Math.random()-0.5)*0.5;
 		//redBall.addComponent(new RandomMoveComponent());
 		for(var j = 0; j < suns.length; j++){
 			redBall.addComponent(new PointGravityComponent(suns[j]));
