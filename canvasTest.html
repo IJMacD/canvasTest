@@ -35,11 +35,23 @@ window.onload = function(){
 		a1 = canvasHeight - ballRadius,
 		a2 = canvasHeight - ballRadius*2,
 		speed = 1/500,
-		decay = 500;
+		decay = 500,
+		debugLines = true,
 		f = function(t){
 			var y = a1-(Math.abs(Math.sin(t*speed)*a2)*(decay/(t+1)));
 			ctx.fillStyle = "#fff";
 			ctx.fillRect(0,0,200,400);
+			if(debugLines){
+				ctx.strokeStyle = "rgba(128,128,128,0.7)";
+				ctx.beginPath();
+				ctx.moveTo(0,a1);
+				ctx.lineTo(200,a1);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(0,ballRadius);
+				ctx.lineTo(200,ballRadius);
+				ctx.stroke();
+			}
 			ctx.fillStyle = "#f00";
 			if(y<a1)
 				ctx.fillCircle(100,y,20);
@@ -47,6 +59,17 @@ window.onload = function(){
 				ctx.fillEllipse(100,y,ballRadius-(a1-y),ballRadius+(a1-y));
 			ctx.fillStyle = "rgba(255,255,255,0.5)";
 			ctx.fillCircle(105,y-5,10);
+			if(debugLines){
+				ctx.strokeStyle = "rgba(0,128,255,0.7)";
+				ctx.beginPath();
+				ctx.moveTo(0,y);
+				ctx.lineTo(200,y);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(100,0);
+				ctx.lineTo(100,400);
+				ctx.stroke();
+			}
 			requestAnimationFrame(f);
 		};
 		requestAnimationFrame(f);
