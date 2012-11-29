@@ -104,12 +104,13 @@ window.onload = function(){
 			parent.y += parent.vy * delta;
 	};
 	var DrawComponent = GameComponent.extend();
-	DrawComponent.prototype._init = function(context, size){
+	DrawComponent.prototype._init = function(context, size, colour){
 		this.context = context;
 		this.size = size;
+		this.colour = colour;
 	};
 	DrawComponent.prototype.update = function(parent, delta) {
-		this.context.fillStyle = "#f00";
+		this.context.fillStyle = this.colour;
 		this.context.fillCircle(parent.x,parent.y,this.size);
 		this.context.fillStyle = "rgba(255,255,255,0.7)";
 		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
@@ -167,6 +168,17 @@ window.onload = function(){
 			parent.vy = Math.random()-0.5;
 		}
 	};
+	var PointGravityComponent = GameComponent.extend();
+	PointGravityComponent.prototype._init = function(object) {
+		this.object = object;
+	};
+	PointGravityComponent.prototype.update = function(parent, delta) {
+		var dx = this.object.x - parent.x,
+			dy = this.object.y - parent.y,
+			theta = Math.atan2(dx, dy);
+		parent.vx += Math.sin(theta)*0.0001*delta;
+		parent.vy += Math.cos(theta)*0.0001*delta;
+	};
 
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager(),
@@ -185,18 +197,21 @@ window.onload = function(){
 	        return r;
 	    }
 	gameRoot.addObject(new CanvasManager(ctx));
+	var massiveObject = new GameObject(width / 2, height / 2);
+	massiveObject.addComponent(new DrawComponent(ctx, 2, "#000"));
+	gameRoot.addObject(massiveObject);
 	for(var i = 0; i < 50; i++){
 		var redBall = new GameObject(
 			random(width, width / 2),
 			random(height, height / 2)
 		);
-		//redBall.vx = Math.random()*0.5;
-		//redBall.vy = Math.random()*0.5;
+		redBall.vx = Math.random()-0.5;
+		redBall.vy = Math.random()-0.5;
 		redBall.addComponent(new RandomMoveComponent());
-		redBall.addComponent(new GravityComponent());
+		redBall.addComponent(new PointGravityComponent(massiveObject));
 		redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		redBall.addComponent(new MoveComponent());
-		redBall.addComponent(new DrawComponent(ctx, ballSize));
+		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		gameRoot.addObject(redBall);
 	}
 
