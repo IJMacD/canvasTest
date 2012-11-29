@@ -291,25 +291,31 @@ window.onload = function(){
 	};
 	var CollisionComponent = GameComponent.extend("CollisionComponent");
 	CollisionComponent.prototype.update = function(parent, delta) {
-		for(var i = 0; i < sCollisionSystem.bounds.length; i++){
-			var collision = (
-					parent.x > sCollisionSystem.bounds[i][0] && 
-					parent.x < sCollisionSystem.bounds[i][2] &&
-					parent.y > sCollisionSystem.bounds[i][1] &&
-					parent.y < sCollisionSystem.bounds[i][3]
-				) ? sCollisionSystem.bounds[i][4] : false;
+		var bounds = sCollisionSystem.getBounds(),
+			i = 0,
+			l = bounds.length,
+			collision = false;
+		for(; i < l; i++){
+			collision = (
+					parent.x > bounds[i][0] && 
+					parent.x < bounds[i][2] &&
+					parent.y > bounds[i][1] &&
+					parent.y < bounds[i][3]
+				) ? bounds[i][4] : false;
 			if(collision)
 				break;
 		}
 
 		if(collision){
-			switch(collision){
-				case "sun":
+			switch(collision.name){
+				case "MassiveObject":
 					gameRoot.removeObject(parent);
 					break;
-				case "ball":
-					parent.vx = -parent.vx*0.9;
-					parent.vy = -parent.vy*0.9;
+				case "RedBall":
+					if(collision != parent){
+						parent.vx = -parent.vx*0.9;
+						parent.vy = -parent.vy*0.9;
+					}
 					break;
 			}
 		}
@@ -317,33 +323,46 @@ window.onload = function(){
 	var CollisionSystem = GameObject.extend("CollisionSystem");
 	CollisionSystem.prototype._init = function() {
 		GameObject.prototype._init.call(this);
-		this.bounds = [];
+		this.bounds = [[],[]];
+		this.boundsCount = 2;
+		this.readIndex = 1;
+		this.writeIndex = 0;
 	};
 	CollisionSystem.prototype.update = function(delta) {
 		GameObject.prototype.update.call(this,delta);
-		this.bounds = [];
+		this.readIndex = (this.readIndex + 1) % this.boundsCount;
+		this.writeIndex = (this.writeIndex + 1) % this.boundsCount;
+		//this.boundsIndex = (this.boundsIndex + 1) % this.boundsCount;
+		this.bounds[this.writeIndex] = [];
 	};
-	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,type){
-		this.bounds.push([x-w/2,y-h/2,x+w/2,y+h/2,type]);
+	CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,object){
+		this.getNextBounds().push([x-w/2,y-h/2,x+w/2,y+h/2,object]);
 	};
+	CollisionSystem.prototype.getBounds = function(){
+		return this.bounds[this.readIndex];
+	}
+	CollisionSystem.prototype.getNextBounds = function(){
+		return this.bounds[this.writeIndex];
+	}
 	var SolidComponent = GameComponent.extend("SolidComponent");
-	SolidComponent.prototype._init = function(width, height, type) {
+	SolidComponent.prototype._init = function(width, height, object) {
 		this.width = width;
 		this.height = height;
-		this.type = type;
+		this.object = object;
 	};
 	SolidComponent.prototype.update = function(parent, delta) {
-		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height,this.type);
+		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height, this.object);
 	};
 	var DebugDrawBoundsComponent = GameComponent.extend("DebugDrawBoundsComponent");
 	DebugDrawBoundsComponent.prototype._init = function(context){
 		this.context = context;
 	}
 	DebugDrawBoundsComponent.prototype.update = function(parent, delta) {
-		for(var i=0;i<sCollisionSystem.bounds.length;i++){
-			var bounds = sCollisionSystem.bounds[i];
+		var bounds = sCollisionSystem.getBounds();
+		for(var i=0;i<bounds.length;i++){
+			var bound = bounds[i];
 			this.context.strokeStyle = "#999";
-			this.context.strokeRect(bounds[0],bounds[1],bounds[2]-bounds[0],bounds[3]-bounds[1]);
+			this.context.strokeRect(bound[0],bound[1],bound[2]-bound[0],bound[3]-bound[1]);
 		}
 	};
 	var InputSystem = GameObject.extend("InputSystem");
@@ -390,7 +409,7 @@ window.onload = function(){
 	    debugLines = false,
 	    sCollisionSystem = new CollisionSystem(),
 	    sInputSystem = new InputSystem();
-	//sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
+	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
 	gameRoot.addObject(sInputSystem);
@@ -401,7 +420,7 @@ window.onload = function(){
 		this.mass = random(0.5,1);
 		this.addComponent(new DrawComponent(ctx, 12, "#ff0"));
 		this.addComponent(new MoveComponent());
-		this.addComponent(new SolidComponent(24,24,"sun"));
+		this.addComponent(new SolidComponent(24,24,this));
 	};
 
 	var RedBall = GameObject.extend("RedBall");
@@ -414,7 +433,7 @@ window.onload = function(){
 
 		this.addComponent(new CollisionComponent());
 		this.addComponent(new MoveComponent());
-		this.addComponent(new SolidComponent(ballSize*2,ballSize*2,"ball"));
+		this.addComponent(new SolidComponent(ballSize*2,ballSize*2,this));
 		this.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		this.addComponent(new DebugDrawPathComponent(ctx));
 	};
