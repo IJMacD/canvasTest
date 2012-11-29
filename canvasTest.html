@@ -297,7 +297,7 @@ window.onload = function(){
 			collision = false;
 		for(; i < l; i++){
 			collision = (
-					parent.x > bounds[i][0] && 
+					parent.x > bounds[i][0] &&
 					parent.x < bounds[i][2] &&
 					parent.y > bounds[i][1] &&
 					parent.y < bounds[i][3]
@@ -444,7 +444,7 @@ window.onload = function(){
 	//for(var i = 0; i < 1; i++){
 		addSun(width/2,height/2);
 	//}
-	for(var i = 0; i < 100; i++){
+	for(var i = 0; i < 10; i++){
 		addRedBall();
 	}
 	var pointMass = null;
@@ -453,13 +453,16 @@ window.onload = function(){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
 		var massiveObject = new MassiveObject(x,y);
-		massiveObject.addComponent(new BounceComponent(12,12,width, height));
+		//massiveObject.addComponent(new BounceComponent(12,12,width, height));
 		gameRoot.addObjectAt(firstSunIndex,massiveObject);
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
 		for(var i = 0; i < suns.length; i++){
 			massiveObject.addComponent(new PointGravityComponent(suns[i]));
 			suns[i].addComponent(new PointGravityComponent(massiveObject));
+		}
+		if(pointMass){
+			massiveObject.addComponent(new PointGravityComponent(pointMass));
 		}
 		massiveObject.addComponent(new DebugDrawPathComponent(ctx));
 		suns.push(massiveObject);
@@ -470,10 +473,14 @@ window.onload = function(){
 		var redBall = new RedBall(x,y);
 		redBall.vx = (Math.random()-0.5)*0.5;
 		redBall.vy = (Math.random()-0.5)*0.5;
-		for(var j = 0; j < suns.length; j++){
-			redBall.addComponent(new PointGravityComponent(suns[j]));
+		if(Math.random() < 0.5){
+			for(var j = 0; j < suns.length; j++){
+				redBall.addComponent(new PointGravityComponent(suns[j]));
+			}
+		}else{
+			redBall.addComponent(new GravityComponent());
+			redBall.addComponent(new BounceComponent(ballSize,ballSize,width,height));
 		}
-		//redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		gameRoot.addObject(redBall);
 		redBalls.push(redBall);
 	}
@@ -533,6 +540,7 @@ window.onload = function(){
 	document.getElementsByTagName('canvas')[0].onclick = function(event){
 		if(pointMass == null){
 			pointMass = new GameObject(event.x,event.y);
+			pointMass.name = "PointMass";
 			pointMass.mass = 1;
 			for(var i = 0; i < redBalls.length; i++)
 				redBalls[i].addComponent(new PointGravityComponent(pointMass));
