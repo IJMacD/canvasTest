@@ -143,11 +143,21 @@ window.onload = function(){
 		this.context = context;
 		this.size = size;
 		this.colour = colour;
+	};
+	DrawComponent.prototype.update = function(parent, delta) {
+		this.context.fillStyle = this.colour;
+		this.context.fillCircle(parent.x,parent.y,this.size);
+		this.context.fillStyle = "rgba(255,255,255,0.7)";
+		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
+	};
+	var DebugDrawComponent = GameComponent.extend();
+	DebugDrawComponent.prototype._init = function(context){
+		this.context = context;
 		this.path = [];
 		this.pathSize = 1000;
 		this.pathIndex = 0;
 	};
-	DrawComponent.prototype.update = function(parent, delta) {
+	DebugDrawComponent.prototype.update = function(parent, delta) {
 		var skip = this.pathIndex % this.pathSize;
 		this.context.strokeStyle = "#CCC";
 		this.context.beginPath();
@@ -165,10 +175,6 @@ window.onload = function(){
 		this.context.stroke();
 		this.pathIndex++;
 		this.path[skip] = [parent.x,parent.y];
-		this.context.fillStyle = this.colour;
-		this.context.fillCircle(parent.x,parent.y,this.size);
-		this.context.fillStyle = "rgba(255,255,255,0.7)";
-		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
 		this.context.strokeStyle = "rgba(0,128,255,0.7)";
 		this.context.beginPath();
 		this.context.moveTo(parent.x, parent.y);
@@ -306,6 +312,7 @@ window.onload = function(){
 		redBall.addComponent(new MoveComponent());
 		redBall.addComponent(new CollisionComponent(width/2,height/2,12,12));
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
+		redBall.addComponent(new DebugDrawComponent(ctx));
 		gameRoot.addObject(redBall);
 		redBalls.push(redBall);
 	}
