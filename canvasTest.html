@@ -88,7 +88,7 @@ window.onload = function(){
 	};
 	CanvasManager.prototype.update = function(delta){
 		this.context.fillStyle = "#fff";
-		this.context.fillRect(0,0,400,400);
+		this.context.fillRect(0,0,this.context.canvas.width,this.context.canvas.height);
 	}
 	var GameComponent = Object.extend();
 	GameComponent.prototype.update = function(parent, delta){};
@@ -151,17 +151,23 @@ window.onload = function(){
 	};
 
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
-		gameRoot = new GameObjectManager();
+		gameRoot = new GameObjectManager(),
+		width = ctx.canvas.width,
+		height = ctx.canvas.height,
+		ballSize = 10;
 	gameRoot.addObject(new CanvasManager(ctx));
-	for(var i = 0; i < 10; i++){
-		var redBall = new GameObject(Math.random()*360+20, Math.random()*360+20);
+	for(var i = 0; i < 50; i++){
+		var redBall = new GameObject(
+			Math.random()*(width-ballSize*2)+ballSize,
+			Math.random()*(height-ballSize*2)+ballSize
+		);
 		//redBall.vx = Math.random()*0.5;
 		//redBall.vy = Math.random()*0.5;
 		redBall.addComponent(new RandomMoveComponent());
 		redBall.addComponent(new GravityComponent());
+		redBall.addComponent(new BounceComponent(ballSize, ballSize, width, height));
 		redBall.addComponent(new MoveComponent());
-		redBall.addComponent(new BounceComponent(10, 10, 400, 400));
-		redBall.addComponent(new DrawComponent(ctx, 10));
+		redBall.addComponent(new DrawComponent(ctx, ballSize));
 		gameRoot.addObject(redBall);
 	}
 
@@ -174,5 +180,5 @@ window.onload = function(){
 	requestAnimationFrame(loop);
 }
 </script>
-<canvas style="border:1px solid" height="400" width="400"></canvas>
+<canvas style="border:1px solid" height="400" width="800"></canvas>
 </html>
