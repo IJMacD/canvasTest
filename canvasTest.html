@@ -307,6 +307,27 @@ window.onload = function(){
 			this.context.strokeRect(bounds[0],bounds[1],bounds[2]-bounds[0],bounds[3]-bounds[1]);
 		}
 	};
+	var InputSystem = GameObject.extend();
+	InputSystem.prototype._init = function() {
+		this.hasInput = false;
+		this.lastInput = null;
+	};
+	InputSystem.prototype.update = function(parent, delta) {
+		//this.hasInput = false;
+	};
+	InputSystem.prototype.click = function(x,y){
+		this.hasInput = true;
+		this.lastInput = {x: x, y: y};
+	}
+	var MoveToClickComponent = GameComponent.extend();
+	MoveToClickComponent.prototype.update = function(parent, delta) {
+		if(sInputSystem.hasInput){
+			parent.x = sInputSystem.lastInput.x;
+			parent.y = sInputSystem.lastInput.y;
+			sInputSystem.hasInput = false;
+		}
+	};
+
 
 	// -----------------
 	// Create Game Graph
@@ -316,7 +337,6 @@ window.onload = function(){
 		width = ctx.canvas.width,
 		height = ctx.canvas.height,
 		ballSize = 4,
-    	// Normal dist between -1 and 1
 	    random = function(sd, mean){
 	        var d=10, r=0, i=0;
 	        for(;i<d;i++)
@@ -328,10 +348,12 @@ window.onload = function(){
 	        return r;
 	    },
 	    debugLines = false,
-	    sCollisionSystem = new CollisionSystem();
+	    sCollisionSystem = new CollisionSystem(),
+	    sInputSystem = new InputSystem();
 	//sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
+	gameRoot.addObject(sInputSystem);
 	var firstSunIndex = gameRoot.objects.length;
 	var suns = [];
 	var redBalls = [];
@@ -341,6 +363,7 @@ window.onload = function(){
 	for(var i = 0; i < 100; i++){
 		addRedBall();
 	}
+	var pointMass = null;
 	function addSun(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
@@ -359,6 +382,7 @@ window.onload = function(){
 			massiveObject.addComponent(new PointGravityComponent(suns[i]));
 			suns[i].addComponent(new PointGravityComponent(massiveObject));
 		}
+		massiveObject.addComponent(new DebugDrawPathComponent(ctx));
 		suns.push(massiveObject);
 	}
 	function addRedBall(x,y){
@@ -434,6 +458,21 @@ window.onload = function(){
 		this.onclick = enableDebugLines;
 	}
 	document.getElementsByTagName('button')[3].onclick = enableDebugLines;
+	document.getElementsByTagName('canvas')[0].onclick = function(event){
+		if(pointMass == null){
+			pointMass = new GameObject(event.x,event.y);
+			pointMass.mass = 1;
+			for(var i = 0; i < redBalls.length; i++)
+				redBalls[i].addComponent(new PointGravityComponent(pointMass));
+			for(var j = 0; j < suns.length; j++){
+				suns[j].addComponent(new PointGravityComponent(pointMass));
+			}
+			pointMass.addComponent(new MoveToClickComponent());
+			pointMass.addComponent(new DrawComponent(ctx, 2, "#000"));
+			gameRoot.addObject(pointMass);
+		}
+		sInputSystem.click(event.clientX, event.clientY);
+	}
 }
 </script>
 </html>
