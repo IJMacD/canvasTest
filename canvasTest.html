@@ -8,7 +8,7 @@ CanvasRenderingContext2D.prototype.strokeCircle = function(x, y, radius){
 window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		f = function(t){
-			var r = Math.abs(Math.sin(t/1000)*150)+50;
+			var r = (Math.sin(t/500)+1)*75+50;
 			ctx.fillRect(0,0,400,400);
 			ctx.strokeCircle(200,200,r);
 			requestAnimationFrame(f);
