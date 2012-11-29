@@ -163,8 +163,8 @@ window.onload = function(){
 	var RandomMoveComponent = GameComponent.extend();
 	RandomMoveComponent.prototype.update = function(parent, delta) {
 		if(Math.random()<0.001){
-			parent.vx = Math.random()*0.5;
-			parent.vy = Math.random()*0.5;
+			parent.vx = Math.random()-0.5;
+			parent.vy = Math.random()-0.5;
 		}
 	};
 
