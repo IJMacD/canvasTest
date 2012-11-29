@@ -5,6 +5,7 @@
 <body>
 <canvas style="border:1px solid" width="1000" height="600"></canvas><br>
 <button class="btn">Fullscreen</button>
+<button class="btn">Add Sun</button>
 <button class="btn">Remove Sun</button>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
@@ -205,8 +206,8 @@ window.onload = function(){
 		var dx = this.object.x - parent.x,
 			dy = this.object.y - parent.y,
 			theta = Math.atan2(dx, dy);
-		parent.vx += Math.sin(theta)*0.0001*delta;
-		parent.vy += Math.cos(theta)*0.0001*delta;
+		parent.vx += Math.sin(theta)*0.0001*this.object.mass*delta;
+		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
 	};
 
 	// -----------------
@@ -231,17 +232,21 @@ window.onload = function(){
 	gameRoot.addObject(new CanvasManager(ctx));
 	var massiveObject1 = new GameObject(width * 1 / 3, height / 2);
 	massiveObject1.vy = 0.08;
+	massiveObject1.mass = 1;
 	massiveObject1.addComponent(new DrawComponent(ctx, 12, "#ff0"));
 	massiveObject1.addComponent(new MoveComponent());
 	gameRoot.addObject(massiveObject1);
 	var massiveObject2 = new GameObject(width * 2 / 3, height / 2);
 	massiveObject2.vy = -0.08;
+	massiveObject2.mass = 1.2;
 	massiveObject2.addComponent(new DrawComponent(ctx, 12, "#ff0"));
 	massiveObject2.addComponent(new PointGravityComponent(massiveObject1));
 	massiveObject1.addComponent(new PointGravityComponent(massiveObject2));
 	massiveObject2.addComponent(new MoveComponent());
 	gameRoot.addObject(massiveObject2);
-	for(var i = 0; i < 50; i++){
+	var suns = [massiveObject1, massiveObject2];
+	var redBalls = [];
+	for(var i = 0; i < 0; i++){
 		var redBall = new GameObject(
 			random(width, width / 2),
 			random(height, height / 2)
@@ -255,6 +260,7 @@ window.onload = function(){
 		redBall.addComponent(new MoveComponent());
 		redBall.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
 		gameRoot.addObject(redBall);
+		redBalls.push(redBall);
 	}
 
 	// --------------------
@@ -276,6 +282,21 @@ window.onload = function(){
 		ctx.canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 	};
 	document.getElementsByTagName('button')[1].onclick = function(){
+		var massiveObject = new GameObject(width / 2, height / 2);
+		massiveObject.vy = -0.00;
+		massiveObject.mass = random(0.5,1);
+		massiveObject.addComponent(new DrawComponent(ctx, 12, "#ff0"));
+		massiveObject.addComponent(new MoveComponent());
+		gameRoot.addObject(massiveObject);
+		for(var i = 0; i < redBalls.length; i++)
+			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
+		for(var i = 0; i < suns.length; i++){
+			massiveObject.addComponent(new PointGravityComponent(suns[i]));
+			suns[i].addComponent(new PointGravityComponent(massiveObject));
+		}
+		suns.push(massiveObject);
+	};
+	document.getElementsByTagName('button')[2].onclick = function(){
 		gameRoot.removeObject(massiveObject2);
 	};
 }
