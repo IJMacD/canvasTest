@@ -411,6 +411,21 @@ window.onload = function(){
 		else
 			parent.vy = parent.vy + (parent.vy < 0 ? dvy : -dvy);
 	};
+	var DebugDrawDataComponentCount = 0,
+		DebugDrawDataComponent = GameComponent.extend("DebugDrawDataComponent");
+	DebugDrawDataComponent.prototype._init = function(context) {
+		this.context = context;
+		this.xOffset = DebugDrawDataComponentCount * 60 + 10;
+		DebugDrawDataComponentCount++;
+	};
+	DebugDrawDataComponent.prototype.update = function(parent, delta) {
+		this.context.fillStyle = "#999";
+		this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, 15);
+		this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, 30);
+		this.context.fillText("vx: " + parent.vx.toFixed(4), this.xOffset, 45);
+		this.context.fillText("vy: " + parent.vy.toFixed(4), this.xOffset, 60);
+	};
+
 
 
 	// -----------------
@@ -445,6 +460,7 @@ window.onload = function(){
 	bullet1.addComponent(new MoveComponent());
 	bullet1.addComponent(new BounceComponent(5,5,width,height));
 	bullet1.addComponent(new DebugDrawPathComponent(ctx));
+	bullet1.addComponent(new DebugDrawDataComponent(ctx));
 	bullet1.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet1);
 	var bullet2 = new GameObject(10,100);
@@ -454,6 +470,7 @@ window.onload = function(){
 	bullet2.addComponent(new MoveComponent());
 	bullet2.addComponent(new BounceComponent(5,5,width,height));
 	bullet2.addComponent(new DebugDrawPathComponent(ctx));
+	bullet2.addComponent(new DebugDrawDataComponent(ctx));
 	bullet2.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet2);
 	var bullet3 = new GameObject(800,100);
@@ -461,6 +478,7 @@ window.onload = function(){
 	bullet3.addComponent(new MoveComponent());
 	bullet3.addComponent(new BounceComponent(5,5,width,height));
 	bullet3.addComponent(new DebugDrawPathComponent(ctx));
+	bullet3.addComponent(new DebugDrawDataComponent(ctx));
 	bullet3.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet3);
 	var bullet4 = new GameObject(840,100);
@@ -469,8 +487,10 @@ window.onload = function(){
 	bullet4.addComponent(new MoveComponent());
 	bullet4.addComponent(new BounceComponent(5,5,width,height));
 	bullet4.addComponent(new DebugDrawPathComponent(ctx));
+	bullet4.addComponent(new DebugDrawDataComponent(ctx));
 	bullet4.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet4);
+
 	var MassiveObject = GameObject.extend("MassiveObject");
 	MassiveObject.prototype._init = function(x,y) {
 		GameObject.prototype._init.call(this,x,y);
