@@ -390,6 +390,27 @@ window.onload = function(){
 			sInputSystem.hasInput = false;
 		}
 	};
+	var AirResistanceComponent = GameComponent.extend("AirResistanceComponent");
+	AirResistanceComponent.prototype._init = function(csa,rho) {
+		this.csa = csa;
+		this.rho = typeof rho == "number" ? rho : 0.001;
+	};
+	AirResistanceComponent.prototype.update = function(parent,delta) {
+		var mag2 = parent.vx*parent.vx + parent.vy*parent.vy,
+			theta = Math.atan2(parent.vx, parent.vy),
+			dv = mag2*this.rho*this.csa*delta,
+			dvx = Math.abs(Math.sin(theta)*dv),
+			dvy = Math.abs(Math.cos(theta)*dv);
+			// Math.abs... Math.min....
+		if(dvx > Math.abs(parent.vx))
+			parent.vx = 0;
+		else
+			parent.vx = parent.vx + (parent.vx < 0 ? dvx : -dvx);
+		if(dvy > Math.abs(parent.vy))
+			parent.vy = 0;
+		else
+			parent.vy = parent.vy + (parent.vy < 0 ? dvy : -dvy);
+	};
 
 
 	// -----------------
@@ -410,7 +431,7 @@ window.onload = function(){
 	            r = sd * r + mean;
 	        return r;
 	    },
-	    debugLines = false,
+	    debugLines = true,
 	    sCollisionSystem = new CollisionSystem(),
 	    sInputSystem = new InputSystem();
 	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
@@ -418,6 +439,38 @@ window.onload = function(){
 	gameRoot.addObject(sCollisionSystem);
 	gameRoot.addObject(sInputSystem);
 
+	var bullet1 = new GameObject(10,100);
+	bullet1.vx = 0.3;
+	bullet1.addComponent(new GravityComponent());
+	bullet1.addComponent(new MoveComponent());
+	bullet1.addComponent(new BounceComponent(5,5,width,height));
+	bullet1.addComponent(new DebugDrawPathComponent(ctx));
+	bullet1.addComponent(new DrawComponent(ctx, 4, "#333"));
+	gameRoot.addObject(bullet1);
+	var bullet2 = new GameObject(10,100);
+	bullet2.vx = 0.3;
+	bullet2.addComponent(new GravityComponent());
+	bullet2.addComponent(new AirResistanceComponent(1));
+	bullet2.addComponent(new MoveComponent());
+	bullet2.addComponent(new BounceComponent(5,5,width,height));
+	bullet2.addComponent(new DebugDrawPathComponent(ctx));
+	bullet2.addComponent(new DrawComponent(ctx, 4, "#333"));
+	gameRoot.addObject(bullet2);
+	var bullet3 = new GameObject(800,100);
+	bullet3.addComponent(new GravityComponent());
+	bullet3.addComponent(new MoveComponent());
+	bullet3.addComponent(new BounceComponent(5,5,width,height));
+	bullet3.addComponent(new DebugDrawPathComponent(ctx));
+	bullet3.addComponent(new DrawComponent(ctx, 4, "#333"));
+	gameRoot.addObject(bullet3);
+	var bullet4 = new GameObject(840,100);
+	bullet4.addComponent(new GravityComponent());
+	bullet4.addComponent(new AirResistanceComponent(1));
+	bullet4.addComponent(new MoveComponent());
+	bullet4.addComponent(new BounceComponent(5,5,width,height));
+	bullet4.addComponent(new DebugDrawPathComponent(ctx));
+	bullet4.addComponent(new DrawComponent(ctx, 4, "#333"));
+	gameRoot.addObject(bullet4);
 	var MassiveObject = GameObject.extend("MassiveObject");
 	MassiveObject.prototype._init = function(x,y) {
 		GameObject.prototype._init.call(this,x,y);
@@ -446,11 +499,11 @@ window.onload = function(){
 	var suns = [];
 	var redBalls = [];
 	//for(var i = 0; i < 1; i++){
-		addSun(width/2,height/2);
+	//	addSun(width/2,height/2);
 	//}
-	for(var i = 0; i < 10; i++){
-		addRedBall();
-	}
+	//for(var i = 0; i < 10; i++){
+	//	addRedBall();
+	//}
 	var pointMass = null;
 
 	function addSun(x,y){
@@ -540,7 +593,8 @@ window.onload = function(){
 		this.innerText = "Enable Debug Lines";
 		this.onclick = enableDebugLines;
 	}
-	document.getElementsByTagName('button')[3].onclick = enableDebugLines;
+	document.getElementsByTagName('button')[3].onclick = debugLines ? disableDebugLines : enableDebugLines;
+	document.getElementsByTagName('button')[3].innerText = debugLines ? "Disable Debug Lines" : "Enable Debug Lines";
 	document.getElementsByTagName('canvas')[0].onclick = function(event){
 		if(pointMass == null){
 			pointMass = new GameObject(event.x,event.y);
