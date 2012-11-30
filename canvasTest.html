@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="http://blueimp.github.com/cdn/css/bootstrap.min.css" />
 </head>
 <body>
-<canvas style="border:1px solid" width="1000" height="600"></canvas><br>
+<canvas width="1000" height="600"></canvas><br>
 <button class="btn">Fullscreen</button>
 <button class="btn">Add Sun</button>
 <button class="btn">Add 10 Balls</button>
@@ -441,7 +441,86 @@ window.onload = function(){
 		this.context.fillText("max vy: " + this.maxVy.toFixed(3), this.xOffset, y+=15);
 		this.context.fillText("max v: " + this.maxV.toFixed(3), this.xOffset, y+=15);
 	};
+	var BackgroundSystem = GameObject.extend("BackgroundSystem");
+	BackgroundSystem.prototype._init = function(context, coords) {
+		this.context = context;
+		this.coords = coords;
+	};
+	BackgroundSystem.prototype.update = function(delta) {
+		GameObject.prototype._init.call(this);
+		var c = this.coords,
+			i = 2,
+			l = c.length;
+		this.context.strokeStyle = "#000";
+		this.context.beginPath();
+		this.context.moveTo(c[0],c[1]);
+		for(;i<l-1;i+=2)
+			this.context.lineTo(c[i],c[i+1]);
+		this.context.stroke();
 
+		this.context.strokeStyle = "#08f";
+		this.context.beginPath();
+		for(i=0;i<l-3;i+=2){
+			var x1 = c[i],
+				y1 = c[i+1],
+				x2 = c[i+2],
+				y2 = c[i+3],
+				dx = x2 - x1,
+				dy = y2 - y1,
+				mx = x1 + dx * 0.5,
+				my = y1 + dy * 0.5,
+				nx = dy / Math.sqrt(dy * dy + dx * dx),
+				ny = -dx / Math.sqrt(dy * dy + dx * dx);
+			this.context.moveTo(mx,my);
+			this.context.lineTo(mx+nx*30,my+ny*30);
+		}
+		this.context.stroke();
+	};
+	var BackgroundCollisionComponent = GameComponent.extend("BackgroundCollisionComponent");
+	BackgroundCollisionComponent.prototype.update = function(parent, delta)
+	{
+		var c = sBackgroundSystem.coords,
+			i = 0,
+			l = c.length,
+			px,py,rx,ry,qx,qy,sx,sy,t,u,
+			nx,ny,ux,uy,wx,wy,scale,
+			f = 0.5,
+			e = 0.9;
+		if(this.lastX){
+			for(;i<l-3;i+=2)
+			{
+				// http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+				px = c[i];
+				py = c[i+1];
+				rx = c[i+2]-px;
+				ry = c[i+3]-py;
+				qx = this.lastX;
+				qy = this.lastY;
+				sx = parent.x - qx;
+				sy = parent.y - qy;
+				t = ((qx - px) * sy - (qy - py) * sx) / (rx * sy - ry * sx);
+				u = ((qx - px) * ry - (qy - py) * rx) / (rx * sy - ry * sx);
+				if(t >= 0 && t <= 1 && u >= 0 && u <= 1)
+				{
+					parent.x = this.lastX;
+					parent.y = this.lastY;
+					// http://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
+					nx = ry / Math.sqrt(ry * ry + rx * rx);
+					ny = -rx / Math.sqrt(ry * ry + rx * rx);
+					scale = (parent.vx * nx + parent.vy * ny);
+					ux = nx * scale;
+					uy = ny * scale;
+					wx = parent.vx - ux;
+					wy = parent.vy - uy;
+					parent.vx = wx*f - ux*e;
+					parent.vy = wy*f - uy*e;
+					break;
+				}
+			}
+		}
+		this.lastX = parent.x;
+		this.lastY = parent.y;
+	}
 
 
 	// -----------------
@@ -464,27 +543,31 @@ window.onload = function(){
 	    },
 	    debugLines = true,
 	    sCollisionSystem = new CollisionSystem(),
-	    sInputSystem = new InputSystem();
+	    sInputSystem = new InputSystem(),
+	    sBackgroundSystem = new BackgroundSystem(ctx, [20,520,200,550,350,525,400,480,500,480,500,530,600,550,666,550,750,450,900,500,920,300,970,120,850,30,530,70,370,40,370,190,30,190,30,400,60,460,50,500,20,520]);
 	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
 	gameRoot.addObject(sInputSystem);
+	gameRoot.addObject(sBackgroundSystem);
 
-	var bullet1 = new GameObject(10,100);
+	var bullet1 = new GameObject(10,200);
 	bullet1.vx = 0.3;
 	bullet1.addComponent(new GravityComponent());
 	bullet1.addComponent(new MoveComponent());
 	bullet1.addComponent(new BounceComponent(5,5,width,height));
+	bullet1.addComponent(new BackgroundCollisionComponent());
 	bullet1.addComponent(new DebugDrawPathComponent(ctx));
 	bullet1.addComponent(new DebugDrawDataComponent(ctx, "H-noAir"));
 	bullet1.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet1);
-	var bullet2 = new GameObject(10,100);
+	var bullet2 = new GameObject(10,200);
 	bullet2.vx = 0.3;
 	bullet2.addComponent(new GravityComponent());
 	bullet2.addComponent(new AirResistanceComponent(1));
 	bullet2.addComponent(new MoveComponent());
 	bullet2.addComponent(new BounceComponent(5,5,width,height));
+	bullet2.addComponent(new BackgroundCollisionComponent());
 	bullet2.addComponent(new DebugDrawPathComponent(ctx));
 	bullet2.addComponent(new DebugDrawDataComponent(ctx, "H-Air"));
 	bullet2.addComponent(new DrawComponent(ctx, 4, "#333"));
@@ -493,6 +576,7 @@ window.onload = function(){
 	bullet3.addComponent(new GravityComponent());
 	bullet3.addComponent(new MoveComponent());
 	bullet3.addComponent(new BounceComponent(5,5,width,height));
+	bullet3.addComponent(new BackgroundCollisionComponent());
 	bullet3.addComponent(new DebugDrawPathComponent(ctx));
 	bullet3.addComponent(new DebugDrawDataComponent(ctx, "V-noAir"));
 	bullet3.addComponent(new DrawComponent(ctx, 4, "#333"));
@@ -502,6 +586,7 @@ window.onload = function(){
 	bullet4.addComponent(new AirResistanceComponent(1));
 	bullet4.addComponent(new MoveComponent());
 	bullet4.addComponent(new BounceComponent(5,5,width,height));
+	bullet4.addComponent(new BackgroundCollisionComponent());
 	bullet4.addComponent(new DebugDrawPathComponent(ctx));
 	bullet4.addComponent(new DebugDrawDataComponent(ctx,"V-Air"));
 	bullet4.addComponent(new DrawComponent(ctx, 4, "#333"));
