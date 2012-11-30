@@ -290,6 +290,10 @@ window.onload = function(){
 		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
 	};
 	var CollisionComponent = GameComponent.extend("CollisionComponent");
+	CollisionComponent.prototype._init = function(width, height) {
+		this.halfWidth = width / 2;
+		this.halfHeight = height / 2;
+	};
 	CollisionComponent.prototype.update = function(parent, delta) {
 		var bounds = sCollisionSystem.getBounds(),
 			i = 0,
@@ -297,10 +301,10 @@ window.onload = function(){
 			collision = false;
 		for(; i < l; i++){
 			collision = (
-					parent.x > bounds[i][0] &&
-					parent.x < bounds[i][2] &&
-					parent.y > bounds[i][1] &&
-					parent.y < bounds[i][3]
+					parent.x + this.halfWidth > bounds[i][0] &&
+					parent.x - this.halfWidth  < bounds[i][2] &&
+					parent.y + this.halfHeight > bounds[i][1] &&
+					parent.y - this.halfHeight < bounds[i][3]
 				) ? bounds[i][4] : false;
 			if(collision)
 				break;
@@ -431,7 +435,7 @@ window.onload = function(){
 		this.mass = 0.1;
 		//this.addComponent(new RandomMoveComponent());
 
-		this.addComponent(new CollisionComponent());
+		this.addComponent(new CollisionComponent(ballSize*2,ballSize*2));
 		this.addComponent(new MoveComponent());
 		this.addComponent(new SolidComponent(ballSize*2,ballSize*2,this));
 		this.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
