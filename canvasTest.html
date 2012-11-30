@@ -413,17 +413,33 @@ window.onload = function(){
 	};
 	var DebugDrawDataComponentCount = 0,
 		DebugDrawDataComponent = GameComponent.extend("DebugDrawDataComponent");
-	DebugDrawDataComponent.prototype._init = function(context) {
+	DebugDrawDataComponent.prototype._init = function(context, desc) {
 		this.context = context;
-		this.xOffset = DebugDrawDataComponentCount * 60 + 10;
+		this.desc = desc;
+		this.xOffset = DebugDrawDataComponentCount * 70 + 10;
 		DebugDrawDataComponentCount++;
+		this.maxX = this.maxY = this.maxVx = this.maxVy = this.maxV = 0;
 	};
 	DebugDrawDataComponent.prototype.update = function(parent, delta) {
+		this.maxX = Math.max(this.maxX, parent.x);
+		this.maxY = Math.max(this.maxY, parent.y);
+		this.maxVx = Math.max(this.maxVx, parent.vx);
+		this.maxVy = Math.max(this.maxVy, parent.vy);
+		this.maxV = Math.max(this.maxV,Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy));
 		this.context.fillStyle = "#999";
-		this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, 15);
-		this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, 30);
-		this.context.fillText("vx: " + parent.vx.toFixed(4), this.xOffset, 45);
-		this.context.fillText("vy: " + parent.vy.toFixed(4), this.xOffset, 60);
+		var y = 0;
+		if(typeof this.desc == "string")
+			this.context.fillText(this.desc, this.xOffset, y+=15);
+		this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, y+=15);
+		this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, y+=15);
+		this.context.fillText("vx: " + parent.vx.toFixed(3), this.xOffset, y+=15);
+		this.context.fillText("vy: " + parent.vy.toFixed(3), this.xOffset, y+=15);
+		this.context.fillText("v: " + Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy).toFixed(3), this.xOffset, y+=15);
+		this.context.fillText("max x: " + this.maxX.toFixed(), this.xOffset, y+=15);
+		this.context.fillText("max y: " + this.maxY.toFixed(), this.xOffset, y+=15);
+		this.context.fillText("max vx: " + this.maxVx.toFixed(3), this.xOffset, y+=15);
+		this.context.fillText("max vy: " + this.maxVy.toFixed(3), this.xOffset, y+=15);
+		this.context.fillText("max v: " + this.maxV.toFixed(3), this.xOffset, y+=15);
 	};
 
 
@@ -460,7 +476,7 @@ window.onload = function(){
 	bullet1.addComponent(new MoveComponent());
 	bullet1.addComponent(new BounceComponent(5,5,width,height));
 	bullet1.addComponent(new DebugDrawPathComponent(ctx));
-	bullet1.addComponent(new DebugDrawDataComponent(ctx));
+	bullet1.addComponent(new DebugDrawDataComponent(ctx, "H-noAir"));
 	bullet1.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet1);
 	var bullet2 = new GameObject(10,100);
@@ -470,7 +486,7 @@ window.onload = function(){
 	bullet2.addComponent(new MoveComponent());
 	bullet2.addComponent(new BounceComponent(5,5,width,height));
 	bullet2.addComponent(new DebugDrawPathComponent(ctx));
-	bullet2.addComponent(new DebugDrawDataComponent(ctx));
+	bullet2.addComponent(new DebugDrawDataComponent(ctx, "H-Air"));
 	bullet2.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet2);
 	var bullet3 = new GameObject(800,100);
@@ -478,7 +494,7 @@ window.onload = function(){
 	bullet3.addComponent(new MoveComponent());
 	bullet3.addComponent(new BounceComponent(5,5,width,height));
 	bullet3.addComponent(new DebugDrawPathComponent(ctx));
-	bullet3.addComponent(new DebugDrawDataComponent(ctx));
+	bullet3.addComponent(new DebugDrawDataComponent(ctx, "V-noAir"));
 	bullet3.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet3);
 	var bullet4 = new GameObject(840,100);
@@ -487,7 +503,7 @@ window.onload = function(){
 	bullet4.addComponent(new MoveComponent());
 	bullet4.addComponent(new BounceComponent(5,5,width,height));
 	bullet4.addComponent(new DebugDrawPathComponent(ctx));
-	bullet4.addComponent(new DebugDrawDataComponent(ctx));
+	bullet4.addComponent(new DebugDrawDataComponent(ctx,"V-Air"));
 	bullet4.addComponent(new DrawComponent(ctx, 4, "#333"));
 	gameRoot.addObject(bullet4);
 
