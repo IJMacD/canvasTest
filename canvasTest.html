@@ -489,7 +489,7 @@ window.onload = function(){
 			px,py,rx,ry,qx,qy,sx,sy,t,u,
 			nx,ny,ux,uy,wx,wy,scale,
 			f = 0.5,
-			e = 0.9;
+			r = 0.9;
 		if(this.lastX){
 			for(;i<l-3;i+=2)
 			{
@@ -516,8 +516,8 @@ window.onload = function(){
 					uy = ny * scale;
 					wx = parent.vx - ux;
 					wy = parent.vy - uy;
-					parent.vx = wx*f - ux*e;
-					parent.vy = wy*f - uy*e;
+					parent.vx = wx*f - ux*r;
+					parent.vy = wy*f - uy*r;
 					break;
 				}
 			}
