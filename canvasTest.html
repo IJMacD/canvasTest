@@ -525,6 +525,16 @@ window.onload = function(){
 		this.lastX = parent.x;
 		this.lastY = parent.y;
 	}
+	var GravitateToClickComponent = GameComponent.extend("GravitateToClickComponent");
+	GravitateToClickComponent.prototype.update = function(parent, delta){
+		if(sInputSystem.hasInput){
+			var dx = sInputSystem.lastInput.x - parent.x,
+				dy = sInputSystem.lastInput.y - parent.y,
+				theta = Math.atan2(dx, dy);
+			parent.vx += Math.sin(theta)*0.001*delta;
+			parent.vy += Math.cos(theta)*0.001*delta;
+		}
+	}
 
 
 	// -----------------
@@ -558,6 +568,7 @@ window.onload = function(){
 	var bullet1 = new GameObject(10,200);
 	bullet1.vx = 0.3;
 	bullet1.addComponent(new GravityComponent());
+	bullet1.addComponent(new GravitateToClickComponent());
 	bullet1.addComponent(new MoveComponent());
 	bullet1.addComponent(new BounceComponent(5,5,width,height));
 	bullet1.addComponent(new BackgroundCollisionComponent());
