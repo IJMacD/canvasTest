@@ -362,11 +362,13 @@ window.onload = function(){
 		this.context = context;
 	}
 	DebugDrawBoundsComponent.prototype.update = function(parent, delta) {
-		var bounds = sCollisionSystem.getBounds();
-		for(var i=0;i<bounds.length;i++){
-			var bound = bounds[i];
-			this.context.strokeStyle = "#999";
-			this.context.strokeRect(bound[0],bound[1],bound[2]-bound[0],bound[3]-bound[1]);
+		if(debugLines){
+			var bounds = sCollisionSystem.getBounds();
+			for(var i=0;i<bounds.length;i++){
+				var bound = bounds[i];
+				this.context.strokeStyle = "#999";
+				this.context.strokeRect(bound[0],bound[1],bound[2]-bound[0],bound[3]-bound[1]);
+			}
 		}
 	};
 	var InputSystem = GameObject.extend("InputSystem");
@@ -458,23 +460,25 @@ window.onload = function(){
 			this.context.lineTo(c[i],c[i+1]);
 		this.context.stroke();
 
+		if(debugLines){
 		this.context.strokeStyle = "#08f";
-		this.context.beginPath();
-		for(i=0;i<l-3;i+=2){
-			var x1 = c[i],
-				y1 = c[i+1],
-				x2 = c[i+2],
-				y2 = c[i+3],
-				dx = x2 - x1,
-				dy = y2 - y1,
-				mx = x1 + dx * 0.5,
-				my = y1 + dy * 0.5,
-				nx = dy / Math.sqrt(dy * dy + dx * dx),
-				ny = -dx / Math.sqrt(dy * dy + dx * dx);
-			this.context.moveTo(mx,my);
-			this.context.lineTo(mx+nx*30,my+ny*30);
+			this.context.beginPath();
+			for(i=0;i<l-3;i+=2){
+				var x1 = c[i],
+					y1 = c[i+1],
+					x2 = c[i+2],
+					y2 = c[i+3],
+					dx = x2 - x1,
+					dy = y2 - y1,
+					mx = x1 + dx * 0.5,
+					my = y1 + dy * 0.5,
+					nx = dy / Math.sqrt(dy * dy + dx * dx),
+					ny = -dx / Math.sqrt(dy * dy + dx * dx);
+				this.context.moveTo(mx,my);
+				this.context.lineTo(mx+nx*30,my+ny*30);
+			}
+			this.context.stroke();
 		}
-		this.context.stroke();
 	};
 	var BackgroundCollisionComponent = GameComponent.extend("BackgroundCollisionComponent");
 	BackgroundCollisionComponent.prototype.update = function(parent, delta)
