@@ -137,6 +137,10 @@ window.onload = function(){
 				this.toBeRemoved.push(this.components[i]);
 		}
 	}
+	GameObject.prototype.setPosition = function(x,y) {
+		this.x = x;
+		this.y = y;
+	};
 	GameObject.prototype.update = function(delta){
 		var i = 0,
 			l = this.components.length,
@@ -344,15 +348,15 @@ window.onload = function(){
 		}
 	};
 	var PointGravityComponent = GameComponent.extend("PointGravityComponent");
-	PointGravityComponent.prototype._init = function(object) {
-		this.object = object;
+	PointGravityComponent.prototype._init = function(target) {
+		this.target = target;
 	};
 	PointGravityComponent.prototype.update = function(parent, delta) {
-		var dx = this.object.x - parent.x,
-			dy = this.object.y - parent.y,
+		var dx = this.target.x - parent.x,
+			dy = this.target.y - parent.y,
 			theta = Math.atan2(dx, dy);
-		parent.vx += Math.sin(theta)*0.0001*this.object.mass*delta;
-		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
+		parent.vx += Math.sin(theta)*0.0001*this.target.mass*delta;
+		parent.vy += Math.cos(theta)*0.0001*this.target.mass*delta;
 	};
 	PointGravityComponent.referencesTest = function(object){
 		return function(testComponent){
