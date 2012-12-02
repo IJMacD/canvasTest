@@ -790,40 +790,157 @@ window.onload = function(){
 		for(var i = 0; i < 10; i++)
 			addRedBall();
 	};
-	function enableDebugLines(){
-		debugLines = true;
+	function enableDEBUG(){
+		DEBUG = true;
 		this.innerText = "Disable Debug Lines";
-		this.onclick = disableDebugLines;
+		this.onclick = disableDEBUG;
 	}
-	function disableDebugLines(){
-		debugLines = false;
+	function disableDEBUG(){
+		DEBUG = false;
 		this.innerText = "Enable Debug Lines";
-		this.onclick = enableDebugLines;
+		this.onclick = enableDEBUG;
 	}
-	document.getElementsByTagName('button')[3].onclick = debugLines ? disableDebugLines : enableDebugLines;
-	document.getElementsByTagName('button')[3].innerText = debugLines ? "Disable Debug Lines" : "Enable Debug Lines";
-	document.getElementsByTagName('canvas')[0].onclick = function(event){
-		if(pointMass == null){
-			pointMass = new GameObject(event.x,event.y);
-			pointMass.name = "PointMass";
-			pointMass.mass = 1;
-			for(var i = 0; i < redBalls.length; i++)
-				redBalls[i].addComponent(new PointGravityComponent(pointMass));
-			for(var j = 0; j < suns.length; j++){
-				suns[j].addComponent(new PointGravityComponent(pointMass));
-			}
-			pointMass.addComponent(new MoveToClickComponent());
-			pointMass.addComponent(new DrawComponent(ctx, 2, "#000"));
-			gameRoot.addObject(pointMass);
+	document.getElementsByTagName('button')[3].onclick = DEBUG ? disableDEBUG : enableDEBUG;
+	document.getElementsByTagName('button')[3].innerText = DEBUG ? "Disable Debug Lines" : "Enable Debug Lines";
+	var leftClickSelect = document.getElementById('left-click-slt'),
+		rightClickSelect = document.getElementById('right-click-slt'),
+		mode = null;
+	var mouseDown = false,
+		currentObject,
+		canvas = document.getElementsByTagName('canvas')[0];
+	canvas.onmousedown = function(event){
+		mouseDown = {x: event.offsetX, y: event.offsetY};
+		mode = event.button == 0 ? leftClickSelect.value : rightClickSelect.value;
+		switch(mode){
+			case 'set-point-mass':
+				if(pointMasses.length == 0)
+					currentObject = addPointMass(event.offsetX, event.offsetY);
+				else{
+					currentObject = pointMasses[pointMasses.length-1];
+					currentObject.setPosition(event.offsetX, event.offsetY);
+				}
+				break;
+			case 'add-point-mass':
+				currentObject = addPointMass(event.offsetX, event.offsetY);
+				break;
+			case 'add-ball':
+				currentObject = addRedBall(mouseDown.x, mouseDown.y);
+				currentObject.vx = 0;
+				currentObject.vy = 0;
+				currentObject.removeComponentByName("MoveComponent");
+				currentObject.removeComponentByName("GravityComponent");
+				currentObject.removeComponentByName("AirResistanceComponent");
+				break;
+			case 'add-sun':
+				currentObject = addSun(mouseDown.x, mouseDown.y);
+				currentObject.vx = 0;
+				currentObject.vy = 0;
+				currentObject.removeComponentByName("MoveComponent");
+				break;
 		}
-		sInputSystem.click(event.offsetX, event.offsetY);
 	}
-	var div = document.getElementsByTagName('div')[0];
+	canvas.onmousemove = function(event){
+		if(mouseDown){
+			switch(mode){
+				case 'add-ball':
+				case 'add-sun':
+					var dx = event.offsetX - mouseDown.x,
+						dy = event.offsetY - mouseDown.y;
+					currentObject.vx = dx / 100;
+					currentObject.vy = dy / 100;
+					break;
+				case 'set-point-mass':
+				case 'add-point-mass':
+					currentObject.setPosition(event.offsetX, event.offsetY);
+					break;
+			}
+		}
+	}
+	canvas.onmouseup = function(event){
+		switch(mode){
+			case 'add-ball':
+				//currentObject.addComponent(new GravityComponent());
+				currentObject.addComponent(new AirResistanceComponent(1,0.0001));
+				currentObject.addComponent(new MoveComponent());
+				break;
+			case 'add-sun':
+				currentObject.addComponent(new MoveComponent());
+				break;
+			case 'add-background':
+				sBackgroundSystem.coords.push(event.offsetX);
+				sBackgroundSystem.coords.push(event.offsetY);
+				break;
+			case 'remove-point-mass':
+				var pointMass = pointMasses.pop();
+				pointMassManager.removeObject(pointMass);
+				for(var i = 0; i < sunManager.objects.length; i++){
+					sunManager.objects[i].removeComponentByTest(PointGravityComponent.referencesTest(pointMass));
+				}
+				for(var i = 0; i < ballManager.objects.length; i++){
+					ballManager.objects[i].removeComponentByTest(PointGravityComponent.referencesTest(pointMass));
+				}
+				break;
+			case 'remove-sun':
+				var sun = suns.pop();
+				sunManager.removeObject(sun);
+				for(var i = 0; i < sunManager.objects.length; i++){
+					sunManager.objects[i].removeComponentByTest(PointGravityComponent.referencesTest(sun));
+				}
+				for(var i = 0; i < ballManager.objects.length; i++){
+					ballManager.objects[i].removeComponentByTest(PointGravityComponent.referencesTest(sun));
+				}
+				break;
+			case 'remove-ball':
+				ballManager.removeObject(redBalls.pop());
+				break;
+			case 'remove-background':
+				sBackgroundSystem.coords.pop();
+				sBackgroundSystem.coords.pop();
+				break;
+		}
+		mouseDown = false;
+		mode = null;
+		currentObject = null;
+	}
+	canvas.oncontextmenu = function(){return false;};
+	var div = document.getElementById('game-tree'),
+		updateTree = function(){div.innerHTML = gameRoot.toHTML();},
+		interval = null;
 	document.getElementsByTagName('button')[4].onclick = function(){
-		var f = function(){div.innerHTML = gameRoot.toHTML();};
-		setInterval(f,100);
-		f();
+		updateTree();
 	}
+	document.getElementById('continuous-refresh-chk').onchange = function(e){
+		if(e.target.checked)
+			interval = setInterval(updateTree,100);
+		else
+			clearInterval(interval);
+	}
+	function updateBtnState(btn, input, updateRadios) {
+        btn.toggleClass('active', input.prop('checked'));
+        btn.toggleClass('disabled', input.prop('disabled'));
+    }
+
+    $(document).on('change', '.btn-toggle input', function(e) {
+        var input = $(e.target);
+        // radio button that are automatically unchecked dont trigger a change event
+        if (input.is(':radio')) {
+            var selector = 'input[type="radio"][name="' + input.attr('name') + '"]';
+            $(selector).each(function() {
+                var input = $(this),
+                    btn = input.parents('.btn-toggle');
+                updateBtnState(btn, input);
+            });
+        } else {
+            var btn = input.parents('.btn-toggle');
+            updateBtnState(btn, input);
+        }
+    });
+
+    $('.btn-toggle').each(function() {
+        var btn = $(this),
+            input = btn.find('input');
+        updateBtnState(btn, input);
+    });
 }
 </script>
 </html>
