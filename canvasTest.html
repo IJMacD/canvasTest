@@ -15,7 +15,7 @@
 		<button class="btn">Fullscreen</button>
 		<button class="btn">Add Sun</button>
 		<button class="btn">Add 10 Balls</button>
-		<button class="btn">Enable Debug Lines</button>
+		<button class="btn">Enable Debugging</button>
 		<div class="btn-group">
 			<button class="btn">Refresh Tree</button>
 			<label class="btn btn-toggle" for="continuous-refresh-chk">
@@ -268,7 +268,7 @@ window.onload = function(){
 		this.lastVy = 0;
 	};
 	DebugDrawPathComponent.prototype.update = function(parent, delta) {
-		if(debugLines){
+		if(DEBUG){
 			var skip = this.pathIndex % this.pathSize;
 			this.context.strokeStyle = "#CCC";
 			this.context.beginPath();
@@ -433,7 +433,7 @@ window.onload = function(){
 		this.context = context;
 	}
 	DebugDrawBoundsComponent.prototype.update = function(parent, delta) {
-		if(debugLines){
+		if(DEBUG){
 			var bounds = sCollisionSystem.getBounds();
 			for(var i=0;i<bounds.length;i++){
 				var bound = bounds[i];
@@ -494,25 +494,27 @@ window.onload = function(){
 		this.maxX = this.maxY = this.maxVx = this.maxVy = this.maxV = 0;
 	};
 	DebugDrawDataComponent.prototype.update = function(parent, delta) {
-		this.maxX = Math.max(this.maxX, parent.x);
-		this.maxY = Math.max(this.maxY, parent.y);
-		this.maxVx = Math.max(this.maxVx, parent.vx);
-		this.maxVy = Math.max(this.maxVy, parent.vy);
-		this.maxV = Math.max(this.maxV,Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy));
-		this.context.fillStyle = "#999";
-		var y = 0;
-		if(typeof this.desc == "string")
-			this.context.fillText(this.desc, this.xOffset, y+=15);
-		this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, y+=15);
-		this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, y+=15);
-		this.context.fillText("vx: " + parent.vx.toFixed(3), this.xOffset, y+=15);
-		this.context.fillText("vy: " + parent.vy.toFixed(3), this.xOffset, y+=15);
-		this.context.fillText("v: " + Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy).toFixed(3), this.xOffset, y+=15);
-		this.context.fillText("max x: " + this.maxX.toFixed(), this.xOffset, y+=15);
-		this.context.fillText("max y: " + this.maxY.toFixed(), this.xOffset, y+=15);
-		this.context.fillText("max vx: " + this.maxVx.toFixed(3), this.xOffset, y+=15);
-		this.context.fillText("max vy: " + this.maxVy.toFixed(3), this.xOffset, y+=15);
-		this.context.fillText("max v: " + this.maxV.toFixed(3), this.xOffset, y+=15);
+		if(DEBUG){
+			this.maxX = Math.max(this.maxX, parent.x);
+			this.maxY = Math.max(this.maxY, parent.y);
+			this.maxVx = Math.max(this.maxVx, parent.vx);
+			this.maxVy = Math.max(this.maxVy, parent.vy);
+			this.maxV = Math.max(this.maxV,Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy));
+			this.context.fillStyle = "#999";
+			var y = 0;
+			if(typeof this.desc == "string")
+				this.context.fillText(this.desc, this.xOffset, y+=15);
+			this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("vx: " + parent.vx.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("vy: " + parent.vy.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("v: " + Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy).toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("max x: " + this.maxX.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("max y: " + this.maxY.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("max vx: " + this.maxVx.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("max vy: " + this.maxVy.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("max v: " + this.maxV.toFixed(3), this.xOffset, y+=15);
+		}
 	};
 	var BackgroundSystem = GameObject.extend("BackgroundSystem");
 	BackgroundSystem.prototype._init = function(context, coords) {
@@ -531,7 +533,7 @@ window.onload = function(){
 			this.context.lineTo(c[i],c[i+1]);
 		this.context.stroke();
 
-		if(debugLines){
+		if(DEBUG){
 		this.context.strokeStyle = "#08f";
 			this.context.beginPath();
 			for(i=0;i<l-3;i+=2){
@@ -626,7 +628,7 @@ window.onload = function(){
 	            r = sd * r + mean;
 	        return r;
 	    },
-	    debugLines = true,
+	    DEBUG = false,
 	    sCollisionSystem = new CollisionSystem(),
 	    sInputSystem = new InputSystem(),
 	    sBackgroundSystem = new BackgroundSystem(ctx, [20,520,200,550,350,525,400,480,500,480,500,530,600,550,666,550,750,450,900,500,920,300,970,120,850,30,530,70,370,40,370,190,30,190,30,400,60,460,50,500,20,520]);
@@ -792,12 +794,12 @@ window.onload = function(){
 	};
 	function enableDEBUG(){
 		DEBUG = true;
-		this.innerText = "Disable Debug Lines";
+		this.innerText = "Disable Debugging";
 		this.onclick = disableDEBUG;
 	}
 	function disableDEBUG(){
 		DEBUG = false;
-		this.innerText = "Enable Debug Lines";
+		this.innerText = "Enable Debugging";
 		this.onclick = enableDEBUG;
 	}
 	document.getElementsByTagName('button')[3].onclick = DEBUG ? disableDEBUG : enableDEBUG;
