@@ -116,16 +116,45 @@ window.onload = function(){
 		this.y = y;
 		this.vx = 0;
 		this.vy = 0;
+		this.toBeRemoved = [];
 	};
 	GameObject.prototype.addComponent = function(component){
 		if(component instanceof GameComponent)
 			this.components.push(component);
 	};
+	GameObject.prototype.removeComponent = function(component){
+		this.toBeRemoved.push(component);
+	}
+	GameObject.prototype.removeComponentByName = function(name){
+		for(var i = 0; i < this.components.length; i++){
+			if(this.components[i].name == name)
+				this.toBeRemoved.push(this.components[i]);
+		}
+	}
+	GameObject.prototype.removeComponentByTest = function(test){
+		for(var i = 0; i < this.components.length; i++){
+			if(test(this.components[i]))
+				this.toBeRemoved.push(this.components[i]);
+		}
+	}
 	GameObject.prototype.update = function(delta){
 		var i = 0,
-			l = this.components.length;
-		for(;i<l;i++)
+			l = this.components.length,
+			j = 0,
+			m = this.toBeRemoved.length;
+		for(;j<m;j++){
+			for(i=0;i<l;i++){
+				if(this.components[i] == this.toBeRemoved[j]){
+					this.components.remove(i);
+					break;
+				}
+			}
+		}
+		this.toBeRemoved = [];
+		l = this.components.length;
+		for(i=0;i<l;i++){
 			this.components[i].update(this, delta);
+		}
 	};
 	GameObject.prototype.toHTML = function() {
 		var html = this.name;
@@ -171,10 +200,11 @@ window.onload = function(){
 			for(;i<l;i++){
 				if(this.objects[i] == this.toBeRemoved[j]){
 					this.objects.remove(i);
-					return;
+					break;
 				}
 			}
 		}
+		this.toBeRemoved = [];
 	};
 	GameObjectManager.prototype.toHTML = function() {
 		var html = this.name;
@@ -323,6 +353,12 @@ window.onload = function(){
 			theta = Math.atan2(dx, dy);
 		parent.vx += Math.sin(theta)*0.0001*this.object.mass*delta;
 		parent.vy += Math.cos(theta)*0.0001*this.object.mass*delta;
+	};
+	PointGravityComponent.referencesTest = function(object){
+		return function(testComponent){
+			return testComponent instanceof PointGravityComponent &&
+				testComponent.target == object;
+		};
 	};
 	var CollisionComponent = GameComponent.extend("CollisionComponent");
 	CollisionComponent.prototype._init = function(width, height) {
