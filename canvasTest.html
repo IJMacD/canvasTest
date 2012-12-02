@@ -1,15 +1,50 @@
+<!DOCTYPE html>
 <html>
 <head>
 <link rel="stylesheet" href="http://blueimp.github.com/cdn/css/bootstrap.min.css" />
+<style>
+.btn-toggle input {
+	display: none;
+}
+</style>
 </head>
 <body>
-<canvas width="1000" height="600"></canvas><br>
-<button class="btn">Fullscreen</button>
-<button class="btn">Add Sun</button>
-<button class="btn">Add 10 Balls</button>
-<button class="btn">Enable Debug Lines</button>
-<button class="btn">Refresh Tree</button>
-<div></div>
+<div class="container">
+	<canvas width="1000" height="600"></canvas><br>
+	<div class="form-inline">
+		<button class="btn">Fullscreen</button>
+		<button class="btn">Add Sun</button>
+		<button class="btn">Add 10 Balls</button>
+		<button class="btn">Enable Debug Lines</button>
+		<div class="btn-group">
+			<button class="btn">Refresh Tree</button>
+			<label class="btn btn-toggle" for="continuous-refresh-chk">
+				<input type="checkbox" id="continuous-refresh-chk" />
+				<i class="icon-refresh"></i>
+			</label>
+		</div><br>
+		<div class="input-prepend">
+			<label for="left-click-slt" class="add-on">Left Click</label>
+			<select id="left-click-slt">
+				<option value="set-point-mass">Set Point Mass</option>
+				<option value="add-point-mass">Add Point Mass</option>
+				<option value="add-sun">Add Sun</option>
+				<option value="add-ball">Add Red Ball</option>
+				<option value="add-background">Extend Background</option>
+			</select>
+		</div>
+		<div class="input-prepend">
+			<label for="right-click-slt" class="add-on">Right Click</label>
+			<select id="right-click-slt">
+				<option value="remove-point-mass">Remove Point Mass</option>
+				<option value="remove-sun">Remove Sun</option>
+				<option value="remove-ball">Remove Red Ball</option>
+				<option value="remove-background">Remove Background Point</option>
+			</select>
+		</div>
+	</div>
+	<div id="game-tree"></div>
+</div>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
 <script>
