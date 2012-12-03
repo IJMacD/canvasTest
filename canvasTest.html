@@ -259,20 +259,16 @@ window.onload = function(){
 			parent.y += parent.vy * delta;
 	};
 	var DrawComponent = GameComponent.extend("DrawComponent");
-	DrawComponent.prototype._init = function(context, size, colour){
-		this.context = context;
+	DrawComponent.prototype._init = function(size, colour){
 		this.size = size;
 		this.colour = colour;
 	};
 	DrawComponent.prototype.update = function(parent, delta) {
-		this.context.fillStyle = this.colour;
-		this.context.fillCircle(parent.x,parent.y,this.size);
-		this.context.fillStyle = "rgba(255,255,255,0.7)";
-		this.context.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45);
+		sRenderSystem.fillCircle(parent.x,parent.y,this.size,this.colour);
+		sRenderSystem.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45,"rgba(255,255,255,0.7)");
 	};
 	var DebugDrawPathComponent = GameComponent.extend("DebugDrawPathComponent");
-	DebugDrawPathComponent.prototype._init = function(context){
-		this.context = context;
+	DebugDrawPathComponent.prototype._init = function(){
 		this.path = [];
 		this.pathSize = 1000;
 		this.pathIndex = 0;
@@ -281,37 +277,32 @@ window.onload = function(){
 	};
 	DebugDrawPathComponent.prototype.update = function(parent, delta) {
 		if(DEBUG){
-			var skip = this.pathIndex % this.pathSize;
-			this.context.strokeStyle = "#CCC";
-			this.context.beginPath();
-			this.context.moveTo(parent.x, parent.y);
+			// Draw Path
+			var skip = this.pathIndex % this.pathSize,
+				path = [parent.x, parent.y];
 			if(this.pathIndex > this.pathSize){
 				for(var i = this.pathSize-1;i>=0;i--){
 					var index = (i + skip + this.pathSize) % this.pathSize;
-					this.context.lineTo(this.path[index][0],this.path[index][1]);
+					path.push(this.path[index][0],this.path[index][1]);
 				}
 			}else{
 				for(var i = this.pathIndex-1;i>=0;i--){
-					this.context.lineTo(this.path[i][0],this.path[i][1]);
+					path.push(this.path[i][0],this.path[i][1]);
 				}
 			}
-			this.context.stroke();
+			sRenderSystem.strokePath(path,"#CCC");
 			this.pathIndex++;
 			this.path[skip] = [parent.x,parent.y];
-			this.context.strokeStyle = "rgba(0,128,255,0.7)";
-			this.context.beginPath();
-			this.context.moveTo(parent.x, parent.y);
-			this.context.lineTo(parent.x+parent.vx*100, parent.y+parent.vy*100);
-			this.context.stroke();
+
+			// Draw Velocity
+			sRenderSystem.strokePath([parent.x, parent.y,parent.x+parent.vx*100, parent.y+parent.vy*100],"rgba(0,128,255,0.7)");
+
+			// Draw Acceleration
 			var ax = (parent.vx - this.lastVx)/delta,
 				ay = (parent.vy - this.lastVy)/delta;
 			this.lastVx = parent.vx;
 			this.lastVy = parent.vy;
-			this.context.strokeStyle = "rgba(0,255,0,0.7)";
-			this.context.beginPath();
-			this.context.moveTo(parent.x, parent.y);
-			this.context.lineTo(parent.x+ax*4e5, parent.y+ay*4e5);
-			this.context.stroke();
+			sRenderSystem.strokePath([parent.x, parent.y,parent.x+ax*4e5, parent.y+ay*4e5],"rgba(0,255,0,0.7)")
 		}else{
 			this.pathIndex = 0;
 		}
@@ -450,8 +441,7 @@ window.onload = function(){
 			var bounds = sCollisionSystem.getBounds();
 			for(var i=0;i<bounds.length;i++){
 				var bound = bounds[i];
-				this.context.strokeStyle = "#999";
-				this.context.strokeRect(bound[0],bound[1],bound[2]-bound[0],bound[3]-bound[1]);
+				sRenderSystem.strokeRect(bound[0],bound[1],bound[2]-bound[0],bound[3]-bound[1],"#999");
 			}
 		}
 	};
@@ -753,6 +743,42 @@ window.onload = function(){
 			}
 		}
 	};
+	var RenderSystem = GameObject.extend("RenderSystem");
+	RenderSystem.prototype._init = function(context) {
+		GameObject.prototype._init.call(this);
+		this.context = context;
+	};
+	RenderSystem.prototype.strokePath = function(path, style) {
+		var canvasX = width / 2 - sCameraSystem.lookAtX,
+			canvasY = height / 2 - sCameraSystem.lookAtY,
+			i = 2,
+			l = path.length;
+		this.context.strokeStyle = style;
+		this.context.beginPath();
+		this.context.moveTo(canvasX+path[0],canvasY+path[1]);
+		for(;i<l-1;i+=2)
+			this.context.lineTo(canvasX+path[i],canvasY+path[i+1]);
+		this.context.stroke();
+	};
+	RenderSystem.prototype.fillCircle = function(x,y,r, style){
+		var canvasX = width / 2 - sCameraSystem.lookAtX,
+			canvasY = height / 2 - sCameraSystem.lookAtY,
+			drawX = canvasX + x,
+			drawY = canvasY + y;
+		this.context.fillStyle = style;
+		this.context.fillCircle(drawX, drawY, r);
+	};
+	RenderSystem.prototype.strokeRect = function(x,y,w,h, style){
+		var canvasX = width / 2 - sCameraSystem.lookAtX,
+			canvasY = height / 2 - sCameraSystem.lookAtY,
+			drawX = canvasX + x,
+			drawY = canvasY + y;
+		this.context.strokeStyle = style;
+		this.context.strokeRect(drawX, drawY, w, h);
+	};
+	RenderSystem.prototype.drawSprite = function(x,y,sprite) {
+		// body...
+	};
 
 
 	// -----------------
@@ -835,7 +861,7 @@ window.onload = function(){
 	MassiveObject.prototype._init = function(x,y) {
 		GameObject.prototype._init.call(this,x,y);
 		this.mass = random(0.5,1);
-		this.addComponent(new DrawComponent(ctx, 12, "#ff0"));
+		this.addComponent(new DrawComponent(12, "#ff0"));
 		this.addComponent(new MoveComponent());
 		this.addComponent(new SolidComponent(24,24,this));
 	};
@@ -853,8 +879,8 @@ window.onload = function(){
 		this.addComponent(new AirResistanceComponent(1,0.0001));
 		this.addComponent(new MoveComponent());
 		this.addComponent(new BackgroundCollisionComponent());
-		this.addComponent(new DrawComponent(ctx, ballSize, "#f00"));
-		this.addComponent(new DebugDrawPathComponent(ctx));
+		this.addComponent(new DrawComponent(ballSize, "#f00"));
+		this.addComponent(new DebugDrawPathComponent());
 	};
 
 	var firstSunIndex = gameRoot.objects.length;
