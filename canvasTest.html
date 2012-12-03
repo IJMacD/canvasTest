@@ -709,6 +709,50 @@ window.onload = function(){
 			return Math.atan2(dvx, dvy);
 		}
 	}();
+	var CameraSystem = GameObject.extend("CameraSystem");
+	CameraSystem.prototype._init = function(initX,initY,width,height) {
+		this.lookAtX = initX;
+		this.lookAtY = initY;
+		this.width = width;
+		this.height = height;
+		this.watchObject = null;
+		this.pruneList = [];
+		this.suspendedObjects = [];
+	};
+	CameraSystem.prototype.watch = function(object) {
+		if(object instanceof GameObject)
+			this.watchObject = object;
+	};
+	CameraSystem.prototype.addManagerForPruning = function(objectManager) {
+		if(objectManager instanceof GameObjectManager)
+			this.pruneList.push(objectManager);
+	};
+	CameraSystem.prototype.update = function(delta) {
+		if(this.watchObject){
+			this.lookAtX = this.watchObject.x;
+			this.lookAtY = this.watchObject.y;
+		}
+		var i = 0,
+			l = this.pruneList.length,
+			mgr, objs, j,
+			dx, dy;
+		for(; i < l; i++){
+			mgr = this.pruneList[i];
+			if(mgr instanceof GameObjectManager)
+			{
+				objs = mgr.objects;
+				for(j=0;j<objs.length;j++){
+					dx = Math.abs(objs[j].x - this.lookAtX);
+					dy = Math.abs(objs[j].y - this.lookAtY);
+					if(dx > this.width * 2 || dy > height * 2)
+					{
+						mgr.removeObject(objs[j]);
+						this.suspendedObjects.push({object: objs[j], parent: mgr, position: j});
+					}
+				}
+			}
+		}
+	};
 
 
 	// -----------------
