@@ -183,7 +183,7 @@ window.onload = function(){
 	GameObjectManager.prototype._init = function(){
 		GameObject.prototype._init.call(this);
 		this.objects = [];
-		this.toBeRemoved = [];
+		this.objectsToBeRemoved = [];
 	};
 	GameObjectManager.prototype.addObject = function(object){
 		if(object instanceof GameObject)
@@ -196,20 +196,21 @@ window.onload = function(){
 	GameObjectManager.prototype.removeObject = function(object){
 		if(!object instanceof GameObject)
 			return;
-		this.toBeRemoved.push(object);
+		this.objectsToBeRemoved.push(object);
 	};
 	GameObjectManager.prototype.update = function(delta){
 		var i = 0,
 			l = this.objects.length,
-			m = this.toBeRemoved.length,
+			m = this.objectsToBeRemoved.length,
 			j = 0;
 		for(;i<l;i++)
 			this.objects[i].update(delta);
 
 		for(;j<m;j++){
 			i = 0;
+			l = this.objects.length;
 			for(;i<l;i++){
-				if(this.objects[i] == this.toBeRemoved[j]){
+				if(this.objects[i] == this.objectsToBeRemoved[j]){
 					this.objects.remove(i);
 					break;
 				}
