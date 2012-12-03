@@ -388,7 +388,7 @@ window.onload = function(){
 		if(collision){
 			switch(collision.name){
 				case "MassiveObject":
-					gameRoot.removeObject(parent);
+					ballManager.removeObject(parent);
 					break;
 				case "RedBall":
 					if(collision != parent){
@@ -786,7 +786,6 @@ window.onload = function(){
 	var ctx = document.getElementsByTagName('canvas')[0].getContext('2d'),
 		gameRoot = new GameObjectManager(),
 		sunManager = new GameObjectManager(),
-		pointMassManager = new GameObjectManager(),
 		ballManager = new GameObjectManager(),
 		width = ctx.canvas.width,
 		height = ctx.canvas.height,
@@ -801,60 +800,18 @@ window.onload = function(){
 	            r = sd * r + mean;
 	        return r;
 	    },
-	    DEBUG = false,
+	    DEBUG = true,
 	    sCollisionSystem = new CollisionSystem(),
-	    sInputSystem = new InputSystem(),
-	    sBackgroundSystem = new BackgroundSystem(ctx, [58,562,90,570,121,568,152,567,185,573,202,566,218,568,239,569,260,569,275,566,293,561,302,560,316,560,336,560,352,560,368,560,387,563,405,562,421,561,434,561,453,562,473,563,496,564,517,559,533,556,547,556,571,554,601,555,612,557,621,560,646,558,667,554,683,552,702,549,712,549,724,555,737,561,746,562,765,562,783,558,791,558,799,555,812,550,815,548,832,545,846,544,854,543,859,543,868,541,880,537,894,536,900,536,916,524,916,524,917,523,920,515,925,509,925,500,926,498,932,483,934,466,937,461,947,442,947,433,945,427,941,418,946,404,949,404,964,397,966,394,966,371,966,366,959,361,950,361,948,361,938,360,935,356,934,344,936,324,937,309,938,297,939,294,935,281,938,269,943,251,940,235,940,221,947,207,952,193,955,182,951,171,957,163,962,154,962,139,958,127,949,125,947,125,928,127,923,122,912,120,899,115,888,113,874,109,862,107,855,96,844,90,829,84,814,79,791,72,773,66,764,50,755,39,751,32,751,22,738,16,712,19,710,28,709,50,709,70,701,71,695,57,689,48,682,36,675,31,666,26,659,24,657,36,652,55,650,64,645,82,642,93,637,88,629,80,621,66,619,56,618,44,609,36,604,27,590,27,577,27,575,34,574,46,570,50,565,57,560,69,554,70,550,80,545,87,539,89,533,87,523,73,521,69,509,62,502,53,491,49,490,36,484,33,478,31,462,25,455,28,441,39,440,51,438,64,439,83,442,104,440,120,432,127,426,119,426,105,425,88,419,68,407,59,405,52,400,48,388,38,378,34,366,41,354,56,342,59,333,59,324,53,316,53,304,52,298,50,290,48,286,57,273,64,270,72,270,86,275,92,281,106,277,112,289,120,290,137,290,153,283,165,274,171,259,170,246,169,236,183,237,197,238,212,238,224,238,237,233,244,221,247,216,247,203,241,201,236,200,231,188,230,171,223,164,220,168,209,171,206,178,201,180,199,185,193,178,181,160,177,150,179,128,189,107,195,87,193,70,183,54,182,28,185,22,196,22,211,31,228,36,234,37,254,30,270,40,281,57,291,66,291,81,286,94,287,98,287,106,283,125,276,145,277,148,283,187,289,217,283,236,283,259,286,266,285,283,285,302,285,324,280,347,265,356,254,362,237,383,227,406,208,427,206,453,204,504,199,515,199,541,188,567,186,598,180,628,170,663,161,689,160,707,160,741,157,753,161,785,171,785,179,785,190,792,221,795,234,777,245,767,248,755,245,749,237,739,231,734,225,717,222,705,222,690,222,687,222,679,234,669,241,667,253,663,258,661,270,656,273,651,272,643,260,636,255,632,254,624,248,616,239,605,237,591,229,575,228,566,229,555,236,542,242,535,251,523,258,518,265,498,239,488,243,470,250,446,245,442,255,427,261,417,269,411,278,398,289,393,294,388,305,388,306,387,317,389,332,393,340,399,349,405,367,406,377,409,385,417,395,431,398,444,398,453,398,458,412,470,427,492,431,545,414,569,399,585,385,608,371,613,357,661,332,681,321,711,321,737,326,758,327,771,335,775,343,776,354,778,371,774,384,768,398,773,408,757,435,737,439,725,455,714,469,698,454,680,451,666,467,645,481,624,476,621,473,612,467,601,463,593,463,580,463,566,466,556,473,542,483,522,490,503,488,488,484,479,480,464,471,444,464,427,452,416,447,401,434,381,428,364,428,346,424,331,420,317,417,300,416,294,418,289,419,276,422,263,423,252,420,238,414,234,411,227,408,215,407,209,406,200,401,198,386,195,377,189,369,170,365,160,362,148,354,127,342,127,342,102,340,88,337,69,340,54,343,50,351,42,363,41,369,41,379,42,390,40,406,40,413,42,421,48,433,48,443,48,457,48,460,47,495,35,503,35,507,35,515,36,525,36,526,43,536,43,547,44,551,53,554,58,562]);
+	    sCameraSystem = new CameraSystem(width / 2, height / 2, width, height),
+	    sRenderSystem = new RenderSystem(ctx);
 	sCollisionSystem.addComponent(new DebugDrawBoundsComponent(ctx));
+	sCameraSystem.addManagerForPruning(ballManager);
 	gameRoot.addObject(new CanvasManager(ctx));
 	gameRoot.addObject(sCollisionSystem);
-	gameRoot.addObject(sInputSystem);
-	gameRoot.addObject(sBackgroundSystem);
+	gameRoot.addObject(sCameraSystem);
+	gameRoot.addObject(sRenderSystem);
 	gameRoot.addObject(sunManager);
-	gameRoot.addObject(pointMassManager);
 	gameRoot.addObject(ballManager);
-
-	var bullet1 = new GameObject(10,200);
-	bullet1.vx = 0.3;
-	bullet1.addComponent(new GravityComponent());
-	bullet1.addComponent(new GravitateToClickComponent());
-	bullet1.addComponent(new MoveComponent());
-	bullet1.addComponent(new BounceComponent(5,5,width,height));
-	bullet1.addComponent(new BackgroundCollisionComponent());
-	bullet1.addComponent(new DebugDrawPathComponent(ctx));
-	bullet1.addComponent(new DebugDrawDataComponent(ctx, "H-noAir"));
-	bullet1.addComponent(new DrawComponent(ctx, 4, "#333"));
-	gameRoot.addObject(bullet1);
-	var bullet2 = new GameObject(10,200);
-	bullet2.vx = 0.3;
-	bullet2.addComponent(new GravityComponent());
-	bullet2.addComponent(new AirResistanceComponent(1));
-	bullet2.addComponent(new MoveComponent());
-	bullet2.addComponent(new BounceComponent(5,5,width,height));
-	bullet2.addComponent(new BackgroundCollisionComponent());
-	bullet2.addComponent(new DebugDrawPathComponent(ctx));
-	bullet2.addComponent(new DebugDrawDataComponent(ctx, "H-Air"));
-	bullet2.addComponent(new DrawComponent(ctx, 4, "#333"));
-	gameRoot.addObject(bullet2);
-	var bullet3 = new GameObject(800,100);
-	bullet3.addComponent(new GravityComponent());
-	bullet3.addComponent(new MoveComponent());
-	bullet3.addComponent(new BounceComponent(5,5,width,height));
-	bullet3.addComponent(new BackgroundCollisionComponent());
-	bullet3.addComponent(new DebugDrawPathComponent(ctx));
-	bullet3.addComponent(new DebugDrawDataComponent(ctx, "V-noAir"));
-	bullet3.addComponent(new DrawComponent(ctx, 4, "#333"));
-	gameRoot.addObject(bullet3);
-	var bullet4 = new GameObject(840,100);
-	bullet4.addComponent(new GravityComponent());
-	bullet4.addComponent(new AirResistanceComponent(1));
-	bullet4.addComponent(new MoveComponent());
-	bullet4.addComponent(new BounceComponent(5,5,width,height));
-	bullet4.addComponent(new BackgroundCollisionComponent());
-	bullet4.addComponent(new DebugDrawPathComponent(ctx));
-	bullet4.addComponent(new DebugDrawDataComponent(ctx,"V-Air"));
-	bullet4.addComponent(new DrawComponent(ctx, 4, "#333"));
-	gameRoot.addObject(bullet4);
 
 	var MassiveObject = GameObject.extend("MassiveObject");
 	MassiveObject.prototype._init = function(x,y) {
@@ -862,7 +819,6 @@ window.onload = function(){
 		this.mass = random(0.5,1);
 		this.addComponent(new DrawComponent(12, "#ff0"));
 		this.addComponent(new MoveComponent());
-		this.addComponent(new SolidComponent(24,24,this));
 	};
 
 	var chance = function(chanceIn){
@@ -871,37 +827,62 @@ window.onload = function(){
 	var RedBall = GameObject.extend("RedBall");
 	RedBall.prototype._init = function(x,y) {
 		GameObject.prototype._init.call(this,x,y);
-		this.vx = random();
-		this.vy = random();
 		this.mass = 0.1;
-		this.addComponent(new GravityComponent());
-		this.addComponent(new AirResistanceComponent(1,0.0001));
 		this.addComponent(new MoveComponent());
-		this.addComponent(new BackgroundCollisionComponent());
 		this.addComponent(new DrawComponent(ballSize, "#f00"));
 		this.addComponent(new DebugDrawPathComponent());
 	};
 
-	var firstSunIndex = gameRoot.objects.length;
-	var suns = [];
-	var redBalls = [];
-	var pointMasses = [];
+	var y = 300,
+		x = 300,
+		v = 0.08,
+		sunA,
+		suns = [],
+		redBalls = [];
+	/*
+	sunManager.addObject(sun);
+	addPlanet(x+=85, y).setVelocity(0,v+=0.02).addComponent(new PointGravityComponent(sun));
+	addPlanet(x+=40, y).setVelocity(0,v+=0.02).addComponent(new PointGravityComponent(sun));
+	addPlanet(x+=40, y).setVelocity(0,v+=0.02).addComponent(new PointGravityComponent(sun));
+	addPlanet(x+=40, y).setVelocity(0,v+=0.02).addComponent(new PointGravityComponent(sun));
+	addPlanet(x+=40, y).setVelocity(0,v+=0.02).addComponent(new PointGravityComponent(sun));
+	*/
+	y = 300;
+	x = 700;
+	v = 0.1;
+	sunA = addSun(x,y);
+	//sunB = addSun(x-300,y);
+	//sunA.setVelocity(0,0);
+	sunA.removeComponentByName("MoveComponent");
+	//sunB.setVelocity(0,-0.07);
+	addRedBall(x+=80, y).setVelocity(0,v);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.02);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.02);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.01);
+	addRedBall(x+=30, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=30, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=30, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=30, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=30, y).setVelocity(0,v-=0.005);
+	sCameraSystem.watch(addRedBall(x+=30, y).setVelocity(0,v-=0.000));
+	addRedBall(x+=20, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.005);
+	addRedBall(x+=20, y).setVelocity(0,v-=0.0025);
 
 	function addSun(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
 		var massiveObject = new MassiveObject(x,y);
-		sunManager.addObjectAt(firstSunIndex,massiveObject);
+		sunManager.addObject(massiveObject);
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
 		for(var i = 0; i < suns.length; i++){
 			massiveObject.addComponent(new PointGravityComponent(suns[i]));
 			suns[i].addComponent(new PointGravityComponent(massiveObject));
 		}
-		for(var i = 0; i < pointMasses.length; i++){
-			massiveObject.addComponent(new PointGravityComponent(pointMasses[i]));
-		}
 		massiveObject.addComponent(new DebugDrawPathComponent(ctx));
+		massiveObject.addComponent(new SolidComponent(24,24));
 		suns.push(massiveObject);
 		return massiveObject;
 	}
@@ -909,48 +890,16 @@ window.onload = function(){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
 		var redBall = new RedBall(x,y);
-		redBall.vx = (Math.random()-0.5)*0.5;
-		redBall.vy = (Math.random()-0.5)*0.5;
-		for(var j = 0; j < suns.length; j++){
-				redBall.addComponent(new PointGravityComponent(suns[j]));
+		redBall.vx = random();
+		redBall.vy = random();
+		for(var i = 0; i < suns.length; i++){
+			redBall.addComponent(new PointGravityComponent(suns[i]));
 		}
-		for(var j = 0; j < pointMasses.length; j++){
-			redBall.addComponent(new PointGravityComponent(pointMasses[j]));
-		}
+		redBall.addComponent(new CollisionComponent(8,8));
+		redBall.addComponent(new DebugDrawDataComponent(ctx));
+		redBall.addComponent(new DebugDrawGraphComponent(ctx, DebugDrawGraphComponent.Velocity));
 		ballManager.addObject(redBall);
-		redBalls.push(redBall);
 		return redBall;
-	}
-	function addPointMass(x,y){
-		var pointMass = new GameObject(x,y);
-		pointMass.name = "PointMass";
-		pointMass.mass = 1;
-		for(var i = 0; i < redBalls.length; i++)
-			redBalls[i].addComponent(new PointGravityComponent(pointMass));
-		for(var j = 0; j < suns.length; j++){
-			suns[j].addComponent(new PointGravityComponent(pointMass));
-		}
-		//pointMass.addComponent(new MoveToClickComponent());
-		pointMass.addComponent(new DrawComponent(ctx, 2, "#000"));
-		pointMassManager.addObject(pointMass);
-		pointMasses.push(pointMass);
-		return pointMass;
-	}
-	function addMoon(obj){
-		var moon = new GameObject(obj.x+10,obj.y+10);
-		moon.vx = 0;
-		moon.vy = 0;
-		moon.mass = 1;
-		moon.addComponent(new PointGravityComponent(obj));
-		for(var j = 0; j < suns.length; j++){
-			//moon.addComponent(new PointGravityComponent(suns[j]));
-		}
-		moon.addComponent(new MoveComponent());
-		moon.addComponent(new CollisionComponent());
-		moon.addComponent(new DrawComponent(ctx, 2, "#000"));
-		moon.addComponent(new DebugDrawPathComponent(ctx));
-		gameRoot.addObject(moon);
-		return moon;
 	}
 
 	// --------------------
