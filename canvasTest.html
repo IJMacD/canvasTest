@@ -625,6 +625,90 @@ window.onload = function(){
 			parent.vy += Math.cos(theta)*0.001*delta;
 		}
 	}
+	var DebugDrawGraphComponentCount = 0,
+		DebugDrawGraphComponent = GameComponent.extend("DebugDrawGraphComponent"),
+		DebugDrawGraphComponentMin,
+		DebugDrawGraphComponentMax = 0;
+	DebugDrawGraphComponent.prototype._init = function(context, evaluate) {
+		if(typeof evaluate != "function")
+			evaluate = function(object){return object.x};
+		this.context = context;
+		this.evaluate = evaluate;
+		this.values = [];
+		this.valueIndex = 0;
+		this.average = [];
+		this.averageSize = 4;
+		this.valueSize = height*this.averageSize;
+		this.offsetX = 50 * DebugDrawGraphComponentCount;
+		this.localMax = 0;
+		this.localMaxAt = 0;
+		DebugDrawGraphComponentCount++;
+	};
+	DebugDrawGraphComponent.prototype.update = function(parent, delta) {
+		if(DEBUG){
+			var skip = this.valueIndex % this.valueSize,
+				v = this.evaluate(parent,delta),
+				x,
+				y = height,
+				scale;
+			if(typeof DebugDrawGraphComponentMin == "undefined")
+				DebugDrawGraphComponentMin = v;
+			if(index == this.localMaxAt)
+				DebugDrawGraphComponentMax = v;
+			DebugDrawGraphComponentMin = Math.min(DebugDrawGraphComponentMin, v);
+			DebugDrawGraphComponentMax = Math.max(DebugDrawGraphComponentMax, v);
+			scale = 50 / (DebugDrawGraphComponentMax - DebugDrawGraphComponentMin);
+			x = this.offsetX + (v - DebugDrawGraphComponentMin) * scale;
+			this.context.strokeStyle = "#F88";
+			this.context.beginPath();
+			this.context.moveTo(x, y);
+			var limit = (this.valueIndex > this.valueSize) ? this.valueSize-1 : this.valueIndex-1;
+			for(var i = limit;i>=0;i-=this.averageSize){
+				var index = (this.valueIndex > this.valueSize) ?
+						(i + skip + this.valueSize) % this.valueSize : i,
+					avgSum = 0,
+					avg,
+					val;
+				for(var j = 0; j < this.averageSize; j++){
+					val = this.values[(index-j+this.valueSize)%this.valueSize];
+					avgSum += val;
+					if(val > this.localMax){
+						this.localMax = val;
+						this.localMaxAt = (index-j+this.valueSize)%this.valueSize;
+					}
+				}
+				avg = avgSum / this.averageSize;
+				x = this.offsetX + (avg - DebugDrawGraphComponentMin) * scale;
+				y--;
+				this.context.lineTo(x,y);
+			}
+			this.context.stroke();
+			this.valueIndex++;
+			this.values[skip] = v;
+		}
+	};
+	DebugDrawGraphComponent.Velocity = function(object){return Math.sqrt(object.vx * object.vx + object.vy * object.vy)};
+	DebugDrawGraphComponent.VelocityAngle = function(object){return Math.atan2(object.vx, object.vy)};
+	DebugDrawGraphComponent.Acceleration = function(){
+		var lastVx = 0, lastVy = 0;
+		return function(object, delta){
+			var dvx = (object.vx - lastVx) / delta,
+				dvy = (object.vy - lastVy) / delta;
+			lastVx = lastVx;
+			lastVy = lastVy;
+			return Math.sqrt(dvx * dvx + dvy * dvy);
+		}
+	}();
+	DebugDrawGraphComponent.AccelerationAngle = function(){
+		var lastVx = 0, lastVy = 0;
+		return function(object, delta){
+			var dvx = (object.vx - lastVx) / delta,
+				dvy = (object.vy - lastVy) / delta;
+			lastVx = lastVx;
+			lastVy = lastVy;
+			return Math.atan2(dvx, dvy);
+		}
+	}();
 
 
 	// -----------------
