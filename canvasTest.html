@@ -362,9 +362,10 @@ window.onload = function(){
 	PointGravityComponent.prototype.update = function(parent, delta) {
 		var dx = this.target.x - parent.x,
 			dy = this.target.y - parent.y,
-			theta = Math.atan2(dx, dy);
-		parent.vx += Math.sin(theta)*0.0001*this.target.mass*delta;
-		parent.vy += Math.cos(theta)*0.0001*this.target.mass*delta;
+			theta = Math.atan2(dx, dy),
+			mag2 = dx * dx + dy * dy;
+		parent.vx += Math.sin(theta)*1.5*this.target.mass*delta/mag2;
+		parent.vy += Math.cos(theta)*1.5*this.target.mass*delta/mag2;
 	};
 	PointGravityComponent.referencesTest = function(object){
 		return function(testComponent){
