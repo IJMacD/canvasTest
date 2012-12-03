@@ -424,13 +424,12 @@ window.onload = function(){
 		return this.bounds[this.writeIndex];
 	}
 	var SolidComponent = GameComponent.extend("SolidComponent");
-	SolidComponent.prototype._init = function(width, height, object) {
+	SolidComponent.prototype._init = function(width, height) {
 		this.width = width;
 		this.height = height;
-		this.object = object;
 	};
 	SolidComponent.prototype.update = function(parent, delta) {
-		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height, this.object);
+		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height, parent);
 	};
 	var DebugDrawBoundsComponent = GameComponent.extend("DebugDrawBoundsComponent");
 	DebugDrawBoundsComponent.prototype._init = function(context){
