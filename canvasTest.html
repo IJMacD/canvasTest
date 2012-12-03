@@ -121,6 +121,7 @@ window.onload = function(){
 	GameObject.prototype.addComponent = function(component){
 		if(component instanceof GameComponent)
 			this.components.push(component);
+		return this;
 	};
 	GameObject.prototype.removeComponent = function(component){
 		this.toBeRemoved.push(component);
@@ -140,6 +141,12 @@ window.onload = function(){
 	GameObject.prototype.setPosition = function(x,y) {
 		this.x = x;
 		this.y = y;
+		return this;
+	};
+	GameObject.prototype.setVelocity = function(vx,vy) {
+		this.vx = vx;
+		this.vy = vy;
+		return this;
 	};
 	GameObject.prototype.update = function(delta){
 		var i = 0,
