@@ -1252,6 +1252,11 @@ window.onload = function(){
 	// -----
 	// UI
 	// -----
+	var leftClickSelect = document.getElementById('left-click-slt'),
+		rightClickSelect = document.getElementById('right-click-slt'),
+		mode = null,
+		mouseDown = false,
+		currentObject;
 	document.getElementsByTagName('button')[0].onclick = function(){
 		canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 	};
@@ -1274,29 +1279,24 @@ window.onload = function(){
 	}
 	document.getElementsByTagName('button')[3].onclick = DEBUG ? disableDEBUG : enableDEBUG;
 	document.getElementsByTagName('button')[3].innerText = DEBUG ? "Disable Debug Lines" : "Enable Debug Lines";
-	var leftClickSelect = document.getElementById('left-click-slt'),
-		rightClickSelect = document.getElementById('right-click-slt'),
-		mode = null;
-	var mouseDown = false,
-		currentObject,
-		canvas = document.getElementsByTagName('canvas')[0];
 	canvas.onmousedown = function(event){
 		mouseDown = {x: event.offsetX, y: event.offsetY};
+		var worldDown = sCameraSystem.screenToWorld(mouseDown.x, mouseDown.y);
 		mode = event.button == 0 ? leftClickSelect.value : rightClickSelect.value;
 		switch(mode){
 			case 'set-point-mass':
 				if(pointMasses.length == 0)
-					currentObject = addPointMass(event.offsetX, event.offsetY);
+					currentObject = addPointMass(worldDown.x, worldDown.y);
 				else{
 					currentObject = pointMasses[pointMasses.length-1];
-					currentObject.setPosition(event.offsetX, event.offsetY);
+					currentObject.setPosition(worldDown.x, worldDown.y);
 				}
 				break;
 			case 'add-point-mass':
-				currentObject = addPointMass(event.offsetX, event.offsetY);
+				currentObject = addPointMass(worldDown.x, worldDown.y);
 				break;
 			case 'add-ball':
-				currentObject = addRedBall(mouseDown.x, mouseDown.y);
+				currentObject = addRedBall(worldDown.x, worldDown.y);
 				currentObject.vx = 0;
 				currentObject.vy = 0;
 				currentObject.removeComponentByName("MoveComponent");
@@ -1304,7 +1304,7 @@ window.onload = function(){
 				currentObject.removeComponentByName("AirResistanceComponent");
 				break;
 			case 'add-sun':
-				currentObject = addSun(mouseDown.x, mouseDown.y);
+				currentObject = addSun(worldDown.x, worldDown.y);
 				currentObject.vx = 0;
 				currentObject.vy = 0;
 				currentObject.removeComponentByName("MoveComponent");
@@ -1313,17 +1313,22 @@ window.onload = function(){
 	}
 	canvas.onmousemove = function(event){
 		if(mouseDown){
+			var p = {x: event.offsetX, y: event.offsetY},
+				worldPoint = sCameraSystem.screenToWorld(p.x, p.y);
 			switch(mode){
 				case 'add-ball':
 				case 'add-sun':
-					var dx = event.offsetX - mouseDown.x,
-						dy = event.offsetY - mouseDown.y;
+					var dx = p.x - mouseDown.x,
+						dy = p.y - mouseDown.y,
+						worldDown = sCameraSystem.screenToWorld(mouseDown.x, mouseDown.y);
+					currentObject.x = worldDown.x;
+					currentObject.y = worldDown.y;
 					currentObject.vx = dx / 100;
 					currentObject.vy = dy / 100;
 					break;
 				case 'set-point-mass':
 				case 'add-point-mass':
-					currentObject.setPosition(event.offsetX, event.offsetY);
+					currentObject.setPosition(worldPoint.x, worldPoint.y);
 					break;
 			}
 		}
@@ -1339,8 +1344,9 @@ window.onload = function(){
 				currentObject.addComponent(new MoveComponent());
 				break;
 			case 'add-background':
-				sBackgroundSystem.coords.push(event.offsetX);
-				sBackgroundSystem.coords.push(event.offsetY);
+				var p = sCameraSystem.screenToWorld(event.offsetX, event.offsetY);
+				sBackgroundSystem.coords.push(p.x);
+				sBackgroundSystem.coords.push(p.y);
 				break;
 			case 'remove-point-mass':
 				var pointMass = pointMasses.pop();
