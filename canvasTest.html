@@ -821,8 +821,7 @@ window.onload = function(){
 		}
 	};
 	var BackgroundSystem = GameObject.extend("BackgroundSystem");
-	BackgroundSystem.prototype._init = function(context, coords) {
-		this.context = context;
+	BackgroundSystem.prototype._init = function(coords) {
 		this.coords = coords;
 	};
 	BackgroundSystem.prototype.update = function(delta) {
@@ -830,15 +829,10 @@ window.onload = function(){
 		var c = this.coords,
 			i = 2,
 			l = c.length;
-		this.context.strokeStyle = "#000";
-		this.context.beginPath();
-		this.context.moveTo(c[0],c[1]);
-		for(;i<l-1;i+=2)
-			this.context.lineTo(c[i],c[i+1]);
-		this.context.stroke();
+		sRenderSystem.strokePath(this.coords,"#000");
 
-		if(DEBUG){
-		this.context.strokeStyle = "#08f";
+		if(DEBUG && false){
+			this.context.strokeStyle = "#08f";
 			this.context.beginPath();
 			for(i=0;i<l-3;i+=2){
 				var x1 = c[i],
@@ -1079,29 +1073,27 @@ window.onload = function(){
 		var canvasX = width / 2 - sCameraSystem.lookAtX,
 			canvasY = height / 2 - sCameraSystem.lookAtY,
 			i = 2,
-			l = path.length;
+			l = path.length,
+			v;
 		this.context.strokeStyle = style;
 		this.context.beginPath();
-		this.context.moveTo(canvasX+path[0],canvasY+path[1]);
-		for(;i<l-1;i+=2)
-			this.context.lineTo(canvasX+path[i],canvasY+path[i+1]);
+		v = sCameraSystem.worldToScreen(path[0],path[1]);
+		this.context.moveTo(v.x,v.y);
+		for(;i<l-1;i+=2){
+			v = sCameraSystem.worldToScreen(path[i],path[i+1]);
+			this.context.lineTo(v.x,v.y);
+		}
 		this.context.stroke();
 	};
 	RenderSystem.prototype.fillCircle = function(x,y,r, style){
-		var canvasX = width / 2 - sCameraSystem.lookAtX,
-			canvasY = height / 2 - sCameraSystem.lookAtY,
-			drawX = canvasX + x,
-			drawY = canvasY + y;
+		var v = sCameraSystem.worldToScreen(x,y);
 		this.context.fillStyle = style;
-		this.context.fillCircle(drawX, drawY, r);
+		this.context.fillCircle(v.x, v.y, r);
 	};
 	RenderSystem.prototype.strokeRect = function(x,y,w,h, style){
-		var canvasX = width / 2 - sCameraSystem.lookAtX,
-			canvasY = height / 2 - sCameraSystem.lookAtY,
-			drawX = canvasX + x,
-			drawY = canvasY + y;
+		var v = sCameraSystem.worldToScreen(x,y);
 		this.context.strokeStyle = style;
-		this.context.strokeRect(drawX, drawY, w, h);
+		this.context.strokeRect(v.x, v.y, w, h);
 	};
 	RenderSystem.prototype.drawSprite = function(x,y,sprite) {
 		// body...
