@@ -1238,10 +1238,12 @@ window.onload = function(){
 	// --------------------
 	// Main Game Control
 	// --------------------
-	var lastTime = 0;
+	var lastTime;
 	function loop(t){
-		var delta = Math.min(t - lastTime, 1000);
-		gameRoot.update(delta);
+		if(lastTime){
+			var delta = Math.min(t - lastTime, 100);
+			gameRoot.update(delta);
+		}
 		lastTime = t;
 		requestAnimationFrame(loop);
 	}
