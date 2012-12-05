@@ -109,6 +109,302 @@ window.onload = function(){
 	// -----------------
 	// Define Components
 	// -----------------
+	Vector = Object.extend();
+	(function(){
+		function n(args){
+			if(typeof args[0] == "Array")
+				return args[0];
+			return Array.prototype.slice.call(args);
+		}
+		Vector.prototype._init = function() {
+			this.values = n(arguments);
+			this.length = this.values.length;
+		};
+		Vector.prototype.toString = function(){
+			return "["+this.values.join(",")+"]";
+		};
+		Vector.prototype.set = function() {
+			var values = n(arguments);
+			if(values.length == this.length) {
+				this.values = values;
+			}
+			return this;
+
+		};
+		Vector.prototype.add = function() {
+			var values = n(arguments);
+			if(values.length == this.length) {
+				for(var i = 0; i < this.length; i++)
+					this.values[i] += values[i];
+			}
+			return this;
+		};
+		Vector.prototype.subtract = function() {
+			var values = n(arguments);
+			if(values.length == this.length) {
+				for(var i = 0; i < this.length; i++)
+					this.values[i] -= values[i];
+			}
+			return this;
+		};
+		Vector.prototype.scale = function(s) {
+			for(var i = 0; i < this.length; i++)
+				this.values[i] *= s;
+			return this;
+		};
+		Vector.prototype.dot = function(vector) {
+			if(!vector instanceof Vector)
+				return;
+			var values = vector.values,
+				value = 0;
+			if(values.length == this.length) {
+				for(var i = 0; i < this.length; i++)
+					value += this.values[i] * values[i];
+			}
+			return value;
+		};
+		Vector2 = Vector.extend();
+		Vector2.prototype._init = function(x,y){
+			if(arguments.length == 0){
+				x = 0;
+				y = 0;
+			}
+			this.x = x;
+			this.y = y;
+			this.length = 2;
+		};
+		Vector2.prototype.toString = function(){
+			return "["+this.x+","+this.y+"]";
+		};
+		Vector2.prototype.clone = function() {
+			return new Vector2(this.x, this.y);
+		};
+		Vector2.prototype.set = function(x,y) {
+			if(x instanceof Vector2){
+				this.x = x.x;
+				this.y = x.y;
+			}
+			else {
+				this.x = x;
+				this.y = y;
+			}
+			return this;
+
+		};
+		Vector2.prototype.add = function(x,y) {
+			if(x instanceof Vector2){
+				this.x += x.x;
+				this.y += x.y;
+			}
+			else {
+				this.x += x;
+				this.y += y;
+			}
+			return this;
+		};
+		Vector2.prototype.subtract = function(x,y) {
+			if(x instanceof Vector2){
+				this.x -= x.x;
+				this.y -= x.y;
+			}
+			else {
+				this.x -= x;
+				this.y -= y;
+			}
+			return this;
+		};
+		Vector2.prototype.scale = function(s) {
+			this.x *= s;
+			this.y *= s;
+			return this;
+		};
+		Vector2.prototype.leftMultiply = function(matrix){
+			if(matrix instanceof Matrix &&
+				matrix.rows == 2 &&
+				matrix.cols == 2){
+				var newX = matrix.values[0][0] * this.x + matrix.values[0][1] * this.y,
+					newY = matrix.values[1][0] * this.x + matrix.values[1][1] * this.y;
+				this.x = newX;
+				this.y = newY;
+			}
+			return this;
+		}
+		Vector2.prototype.normalise = function(){
+			var mag = Math.sqrt(this.x*this.x + this.y*this.y);
+			this.x /= mag;
+			this.y /= mag;
+			return this;
+		};
+		Vector2.prototype.magnitude = function(){
+			return Math.sqrt(this.x*this.x + this.y*this.y);
+		};
+		Vector2.prototype.magnitude2 = function(){
+			return this.x*this.x + this.y*this.y;
+		};
+		Vector2.prototype.angle = function(){
+			return Math.atan2(this.x, this.y);
+		};
+		Vector2.prototype.cross = function(x,y) {
+			if(x instanceof Vector2){
+				y = x.y;
+				x = x.x;
+			}
+			return this.x * y - this.y * x;
+		};
+		Vector2.prototype.dot = function(x,y) {
+			if(x instanceof Vector2)
+				return this.x * x.x + this.y * x.y;
+			else
+				return this.x * x + this.y * y;
+		};
+		Vector2.prototype.normal = function() {
+			return (new Vector2(this.y, -this.x)).normalise();
+		};
+		Vector2.angleBetween = function(v1, v2) {
+			return Math.atan2(v2.x - v1.x, v2.y - v1.y);
+		};
+		Vector3 = Vector.extend();
+		Vector3.prototype._init = function(x,y,z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.length = 3;
+		};
+		Vector3.prototype.toString = function(){
+			return "["+this.x+","+this.y+","+this.z+"]";
+		};
+		Vector3.prototype.cross = function(x,y,z) {
+			if(x instanceof Vector3){
+				var y = x.y,
+					z = x.z,
+					x = x.x;
+			}
+			return new Vector3(
+				this.y * z - this.z * y,
+				this.z * x - this.x * z,
+				this.x * y - this.y * x);
+		};
+		Vector3.prototype.dot = function(x,y,z) {
+			if(x instanceof Vector3){
+				var y = x.y,
+					z = x.z,
+					x = x.x;
+			}
+			return this.x * x + this.y * y + this.z * z;
+		};
+		Matrix = Object.extend();
+		Matrix.prototype._init = function(values){
+			if(values.length > 1){
+				var length = values[0].length,
+					i = 1,
+					l = values.length;
+				for(;i<l;i++){
+					if(values[i].length != length)
+						break;
+				}
+				if(i != l)
+					return;
+				this.rows = l;
+				this.cols = length;
+			}
+			else{
+				this.rows = 1;
+				this.cols = values[0].length;
+			}
+			this.values = values;
+		};
+		Matrix.prototype.toString = function() {
+			var strs = [];
+			for(var i = 0; i < this.rows; i++)
+				strs[i] = "["+this.values[i].join(",")+"]";
+			return strs.join("\n");
+		};
+		Matrix.prototype.add = function(matrix) {
+			if(matrix instanceof Matrix &&
+				this.rows == matrix.rows &&
+				this.cols == matrix.cols){
+				for(var i = 0; i < this.rows; i++){
+					for(var j = 0; j < this.cols; j++){
+						this.values[i][j] += matrix[i][j];
+					}
+				}
+			}
+			return this;
+		};
+		Matrix.prototype.subtract = function(matrix) {
+			if(matrix instanceof Matrix &&
+				this.rows == matrix.rows &&
+				this.cols == matrix.cols){
+				for(var i = 0; i < this.rows; i++){
+					for(var j = 0; j < this.cols; j++){
+						this.values[i][j] -= matrix[i][j];
+					}
+				}
+			}
+			return this;
+		};
+		Matrix.prototype.scale = function(factor) {
+			for(var i = 0; i < this.rows; i++){
+				for(var j = 0; j < this.cols; j++){
+					this.values[i][j] *= factor;
+				}
+			}
+			return this;
+		};
+		Matrix.prototype.det = function() {
+			if(this.rows == 2 &&
+				this.cols == 2){
+				return this.values[0][0]*this.values[1][1] - this.values[0][1]*this.values[1][0];
+			}
+		};
+		Matrix.prototype.inverse = function(){
+			if(this.rows == 2 &&
+				this.cols == 2 &&
+				this.det() != 0){
+				var v = this.values;
+				return (new Matrix([[v[1][1],-v[0][1]],[-v[1][0],v[0][0]]])).scale(1/this.det());
+			}
+		};
+		Matrix.prototype.multiply = function(matrix) {
+			var values = [];
+			if(matrix instanceof Matrix &&
+				this.rows == matrix.cols &&
+				this.cols == matrix.rows){
+				for(var i = 0; i < this.rows; i++){
+					values[i] = [];
+					for(var j = 0; j < matrix.cols; j++){
+						var value = 0;
+						for(var k = 0; k < this.cols; k++)
+							value += this.values[i][k] * matrix.values[k][j];
+						values[i][j] = value;
+					}
+				}
+			}
+			return new Matrix(values);
+		};
+		Matrix.rotationMatrix = function(theta){
+			return new Matrix([
+				[Math.cos(theta),-Math.sin(theta)],
+				[Math.sin(theta), Math.cos(theta)]
+			]);
+		};
+		Matrix.scaleMatrix = function(sx,sy){
+			if(arguments.length == 1)
+				sy = sx;
+			return new Matrix([
+				[sx,0],
+				[0, sy]
+			]);
+		};
+		Matrix.shearMatrix = function(thetax,thetay){
+			if(arguments.length == 1)
+				thetay = 0;
+			return new Matrix([
+				[1, Math.tan(thetax)],
+				[Math.tan(thetay), 1]
+			]);
+		};
+	})();
 	var GameObject = Object.extend("GameObject");
 	GameObject.prototype._init = function(x, y){
 		this.components = [];
@@ -349,14 +645,16 @@ window.onload = function(){
 	var PointGravityComponent = GameComponent.extend("PointGravityComponent");
 	PointGravityComponent.prototype._init = function(target) {
 		this.target = target;
+		this.vector = new Vector2();
 	};
 	PointGravityComponent.prototype.update = function(parent, delta) {
-		var dx = this.target.x - parent.x,
-			dy = this.target.y - parent.y,
-			theta = Math.atan2(dx, dy),
-			mag2 = dx * dx + dy * dy;
-		parent.vx += Math.sin(theta)*1.5*this.target.mass*delta/mag2;
-		parent.vy += Math.cos(theta)*1.5*this.target.mass*delta/mag2;
+		var vec = this.vector.set(this.target.x, this.target.y).subtract(parent.x, parent.y),
+			theta = vec.angle(),
+			scalar = this.target.mass*delta/vec.magnitude2();
+		vec.set(Math.sin(theta),Math.cos(theta));
+		vec.scale(scalar);
+		parent.vx += vec.x;
+		parent.vy += vec.y;
 	};
 	PointGravityComponent.referencesTest = function(object){
 		return function(testComponent){
@@ -565,38 +863,39 @@ window.onload = function(){
 		var c = sBackgroundSystem.coords,
 			i = 0,
 			l = c.length,
-			px,py,rx,ry,qx,qy,sx,sy,t,u,
-			nx,ny,ux,uy,wx,wy,scale,
+			t,u,n,w,
 			f = 0.5,
-			r = 0.9;
+			e = 0.9,
+			p = new Vector2(),
+			r = new Vector2(),
+			q = new Vector2(),
+			s = new Vector2(),
+			q_p = new Vector2(),
+			v = new Vector2();
 		if(this.lastX){
 			for(;i<l-3;i+=2)
 			{
 				// http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-				px = c[i];
-				py = c[i+1];
-				rx = c[i+2]-px;
-				ry = c[i+3]-py;
-				qx = this.lastX;
-				qy = this.lastY;
-				sx = parent.x - qx;
-				sy = parent.y - qy;
-				t = ((qx - px) * sy - (qy - py) * sx) / (rx * sy - ry * sx);
-				u = ((qx - px) * ry - (qy - py) * rx) / (rx * sy - ry * sx);
+				p.set(c[i  ],c[i+1]),
+				r.set(c[i+2],c[i+3]).subtract(p),
+				q.set(this.lastX, this.lastY);
+				s.set(parent.x, parent.y).subtract(q);
+				q_p = q.clone().subtract(p);
+				t = q_p.cross(s) / r.cross(s);
+				u = q_p.cross(r) / r.cross(s);
 				if(t >= 0 && t <= 1 && u >= 0 && u <= 1)
 				{
 					parent.x = this.lastX;
 					parent.y = this.lastY;
 					// http://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
-					nx = ry / Math.sqrt(ry * ry + rx * rx);
-					ny = -rx / Math.sqrt(ry * ry + rx * rx);
-					scale = (parent.vx * nx + parent.vy * ny);
-					ux = nx * scale;
-					uy = ny * scale;
-					wx = parent.vx - ux;
-					wy = parent.vy - uy;
-					parent.vx = wx*f - ux*r;
-					parent.vy = wy*f - uy*r;
+					n = r.normal();
+					v.set(parent.vx, parent.vy);
+					u = n.clone().scale(n.dot(v));
+					w = v.clone().subtract(u);
+					w.scale(f);
+					u.scale(e);
+					parent.vx = w.x - u.x;
+					parent.vy = w.y - u.y;
 					break;
 				}
 			}
@@ -700,27 +999,56 @@ window.onload = function(){
 	}();
 	var CameraSystem = GameObject.extend("CameraSystem");
 	CameraSystem.prototype._init = function(initX,initY,width,height) {
-		this.lookAtX = initX;
-		this.lookAtY = initY;
+		this.lookAt = new Vector2(initX,initY);
 		this.width = width;
 		this.height = height;
 		this.watchObject = null;
 		this.pruneList = [];
 		this.suspendedObjects = [];
+		this.rotation = 0;
+		this.rotMat = Matrix.rotationMatrix(this.rotation);
+		this.angle = 0;
+		this.scaleMatrix = Matrix.scaleMatrix(1);
+		this.shearMatrix = Matrix.shearMatrix(0);
+		this.worldVec = new Vector2();
+		this.screenVec = new Vector2();
 	};
 	CameraSystem.prototype.watch = function(object) {
-		if(object instanceof GameObject)
+		if(typeof object.x == "number" &&
+			typeof object.y == "number")
 			this.watchObject = object;
 	};
 	CameraSystem.prototype.addManagerForPruning = function(objectManager) {
 		if(objectManager instanceof GameObjectManager)
 			this.pruneList.push(objectManager);
 	};
+	CameraSystem.prototype.worldToScreen = function(worldX,worldY){
+		var v = this.worldVec.set(worldX, worldY);
+		v.subtract(this.lookAt);
+		v.leftMultiply(this.shearMatrix);
+		v.leftMultiply(this.scaleMatrix);
+		v.leftMultiply(this.rotMat);
+		v.add(width / 2, height / 2)
+		return v;
+	};
+	CameraSystem.prototype.screenToWorld = function(screenX,screenY){
+		var v = this.screenVec.set(screenX, screenY);
+		v.subtract(width / 2, height / 2);
+		v.leftMultiply(this.rotMat.inverse());
+		v.leftMultiply(this.scaleMatrix.inverse());
+		v.leftMultiply(this.shearMatrix.inverse());
+		v.add(this.lookAt);
+		return v;
+	};
 	CameraSystem.prototype.update = function(delta) {
-		if(this.watchObject){
-			this.lookAtX = this.watchObject.x;
-			this.lookAtY = this.watchObject.y;
-		}
+		if(this.watchObject)
+			this.lookAt.set(this.watchObject.x, this.watchObject.y);
+		//this.rotation += 0.0001 * delta;
+		//this.rotMat = Matrix.rotationMatrix(-Vector2.angleBetween(suns[0],pointMasses[0]));
+		//this.angle += 0.0001 * delta;
+		//this.scaleMatrix.values[0][0] = -(Math.sin(this.angle)+0.5)*3;
+		//this.scaleMatrix.values[1][1] = (Math.sin(this.angle)+0.5)*3;
+		//this.rotMat = Matrix.rotationMatrix(this.rotation);
 		var i = 0,
 			l = this.pruneList.length,
 			mgr, objs, j,
@@ -731,9 +1059,9 @@ window.onload = function(){
 			{
 				objs = mgr.objects;
 				for(j=0;j<objs.length;j++){
-					dx = Math.abs(objs[j].x - this.lookAtX);
-					dy = Math.abs(objs[j].y - this.lookAtY);
-					if(dx > this.width * 2 || dy > height * 2)
+					dx = Math.abs(objs[j].x - this.lookAt.x);
+					dy = Math.abs(objs[j].y - this.lookAt.y);
+					if(dx > width * 2 || dy > height * 2)
 					{
 						mgr.removeObject(objs[j]);
 						this.suspendedObjects.push({object: objs[j], parent: mgr, position: j});
