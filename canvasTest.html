@@ -539,8 +539,8 @@ window.onload = function(){
 		this.context = context;
 	};
 	CanvasManager.prototype.update = function(delta){
-		this.context.fillStyle = "#fff";
-		this.context.fillRect(0,0,this.context.canvas.width,this.context.canvas.height);
+		width = this.context.canvas.width = this.context.canvas.offsetWidth;
+		height = this.context.canvas.height = this.context.canvas.offsetHeight;
 	}
 	var GameComponent = Object.extend("GameComponent");
 	GameComponent.prototype.update = function(parent, delta){};
