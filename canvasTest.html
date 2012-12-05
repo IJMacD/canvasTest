@@ -6,6 +6,18 @@
 .btn-toggle input {
 	display: none;
 }
+canvas {
+	height: 600px;
+	width: 1000px;
+}
+canvas:-webkit-full-screen {
+  height: 100% !important;
+  width: 100% !important;
+}
+canvas:-moz-full-screen {
+  height: 100% !important;
+  width: 100% !important;
+}
 </style>
 </head>
 <body>
@@ -1222,6 +1234,7 @@ window.onload = function(){
 		return redBall;
 	}
 
+	var canvas = document.getElementsByTagName('canvas')[0];
 	// --------------------
 	// Main Game Control
 	// --------------------
@@ -1238,7 +1251,7 @@ window.onload = function(){
 	// UI
 	// -----
 	document.getElementsByTagName('button')[0].onclick = function(){
-		ctx.canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+		canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 	};
 	document.getElementsByTagName('button')[1].onclick = function(){
 		addSun();
