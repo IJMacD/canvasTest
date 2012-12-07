@@ -623,14 +623,14 @@ window.onload = function(){
 			this.pathIndex = 0;
 		}
 	};
-	var BounceComponent = GameComponent.extend("BounceComponent");
-	BounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
+	var WorldBounceComponent = GameComponent.extend("WorldBounceComponent");
+	WorldBounceComponent.prototype._init = function(width, height, roomWidth, roomHeight) {
 		this.ax = width / 2;
 		this.ay = height / 2;
 		this.bx = roomWidth - this.ax;
 		this.by = roomHeight - this.ay;
 	};
-	BounceComponent.prototype.update = function(parent, delta) {
+	WorldBounceComponent.prototype.update = function(parent, delta) {
 		var coef = 0.9;
 		if(parent.position.x < this.ax){
 			parent.position.x = this.ax;
