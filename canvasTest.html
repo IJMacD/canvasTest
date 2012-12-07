@@ -433,18 +433,21 @@ window.onload = function(){
 	};
 	GameObject.prototype.removeComponent = function(component){
 		this.toBeRemoved.push(component);
+		return this;
 	}
 	GameObject.prototype.removeComponentByName = function(name){
 		for(var i = 0; i < this.components.length; i++){
 			if(this.components[i].name == name)
 				this.toBeRemoved.push(this.components[i]);
 		}
+		return this;
 	}
 	GameObject.prototype.removeComponentByTest = function(test){
 		for(var i = 0; i < this.components.length; i++){
 			if(test(this.components[i]))
 				this.toBeRemoved.push(this.components[i]);
 		}
+		return this;
 	}
 	GameObject.prototype.setPosition = function(x,y) {
 		this.position.set(x,y);
@@ -494,15 +497,17 @@ window.onload = function(){
 	GameObjectManager.prototype.addObject = function(object){
 		if(object instanceof GameObject)
 			this.objects.push(object);
+		return this;
 	};
 	GameObjectManager.prototype.addObjectAt = function(index, object){
 		if(object instanceof GameObject)
 			this.objects.splice(index,0,object);
+		return this;
 	};
 	GameObjectManager.prototype.removeObject = function(object){
-		if(!object instanceof GameObject)
-			return;
-		this.objectsToBeRemoved.push(object);
+		if(object instanceof GameObject)
+			this.objectsToBeRemoved.push(object);
+		return this;
 	};
 	GameObjectManager.prototype.update = function(delta){
 		var i = 0,
