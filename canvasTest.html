@@ -177,7 +177,7 @@ window.onload = function(){
 		};
 		Vector2 = Vector.extend();
 		Vector2.prototype._init = function(x,y){
-			if(arguments.length == 0){
+			if(arguments.length < 2){
 				x = 0;
 				y = 0;
 			}
@@ -186,20 +186,22 @@ window.onload = function(){
 			this.length = 2;
 		};
 		Vector2.prototype.toString = function(){
-			return "["+this.x+","+this.y+"]";
+			return "["+this.x.toFixed()+","+this.y.toFixed()+"]";
 		};
 		Vector2.prototype.clone = function() {
 			return new Vector2(this.x, this.y);
 		};
 		Vector2.prototype.set = function(x,y) {
-			if(x instanceof Vector2){
-				this.x = x.x;
-				this.y = x.y;
+			if(arguments.length == 0){
+				x = 0;
+				y = 0;
 			}
-			else {
-				this.x = x;
-				this.y = y;
+			else if(arguments[0] instanceof Vector2){
+				y = arguments[0].y;
+				x = arguments[0].x;
 			}
+			this.x = x;
+			this.y = y;
 			return this;
 
 		};
@@ -420,10 +422,8 @@ window.onload = function(){
 	var GameObject = Object.extend("GameObject");
 	GameObject.prototype._init = function(x, y){
 		this.components = [];
-		this.x = x;
-		this.y = y;
-		this.vx = 0;
-		this.vy = 0;
+		this.position = new Vector2(x, y);
+		this.velocity = new Vector2();
 		this.toBeRemoved = [];
 	};
 	GameObject.prototype.addComponent = function(component){
@@ -447,13 +447,11 @@ window.onload = function(){
 		}
 	}
 	GameObject.prototype.setPosition = function(x,y) {
-		this.x = x;
-		this.y = y;
+		this.position.set(x,y);
 		return this;
 	};
 	GameObject.prototype.setVelocity = function(vx,vy) {
-		this.vx = vx;
-		this.vy = vy;
+		this.velocity.set(vx, vy);
 		return this;
 	};
 	GameObject.prototype.update = function(delta){
@@ -477,8 +475,8 @@ window.onload = function(){
 	};
 	GameObject.prototype.toHTML = function() {
 		var html = this.name;
-		if(typeof this.x == "number")
-			html += " (" + this.x.toFixed() + "," + this.y.toFixed() + ")";
+		if(typeof this.position.x == "number")
+			html += " " + this.position;
 		if(this.components.length){
 			html += "<ul>";
 			for(var i=0;i<this.components.length;i++)
@@ -560,11 +558,12 @@ window.onload = function(){
 		return this.name;
 	};
 	var MoveComponent = GameComponent.extend("MoveComponent");
+	MoveComponent.prototype._init = function() {
+		this.delta = new Vector2();
+	};
 	MoveComponent.prototype.update = function(parent, delta) {
-		if(parent.vx)
-			parent.x += parent.vx * delta;
-		if(parent.vy)
-			parent.y += parent.vy * delta;
+		this.delta.set(parent.velocity).scale(delta);
+		parent.position.add(this.delta);
 	};
 	var DrawComponent = GameComponent.extend("DrawComponent");
 	DrawComponent.prototype._init = function(size, colour){
@@ -572,8 +571,8 @@ window.onload = function(){
 		this.colour = colour;
 	};
 	DrawComponent.prototype.update = function(parent, delta) {
-		sRenderSystem.fillCircle(parent.x,parent.y,this.size,this.colour);
-		sRenderSystem.fillCircle(parent.x+this.size*0.33,parent.y-this.size*0.33,this.size*0.45,"rgba(255,255,255,0.7)");
+		sRenderSystem.fillCircle(parent.position.x,parent.position.y,this.size,this.colour);
+		sRenderSystem.fillCircle(parent.position.x+this.size*0.33,parent.position.y-this.size*0.33,this.size*0.45,"rgba(255,255,255,0.7)");
 	};
 	var DebugDrawPathComponent = GameComponent.extend("DebugDrawPathComponent");
 	DebugDrawPathComponent.prototype._init = function(){
@@ -587,7 +586,7 @@ window.onload = function(){
 		if(DEBUG){
 			// Draw Path
 			var skip = this.pathIndex % this.pathSize,
-				path = [parent.x, parent.y];
+				path = [parent.position.x, parent.position.y];
 			if(this.pathIndex > this.pathSize){
 				for(var i = this.pathSize-1;i>=0;i--){
 					var index = (i + skip + this.pathSize) % this.pathSize;
@@ -600,17 +599,21 @@ window.onload = function(){
 			}
 			sRenderSystem.strokePath(path,"#CCC");
 			this.pathIndex++;
-			this.path[skip] = [parent.x,parent.y];
+			this.path[skip] = [parent.position.x,parent.position.y];
 
 			// Draw Velocity
-			sRenderSystem.strokePath([parent.x, parent.y,parent.x+parent.vx*100, parent.y+parent.vy*100],"rgba(0,128,255,0.7)");
+			sRenderSystem.strokePath([parent.position.x, parent.position.y,
+				parent.position.x+parent.velocity.x*100, parent.position.y+parent.velocity.y*100],
+				"rgba(0,128,255,0.7)");
 
 			// Draw Acceleration
-			var ax = (parent.vx - this.lastVx)/delta,
-				ay = (parent.vy - this.lastVy)/delta;
-			this.lastVx = parent.vx;
-			this.lastVy = parent.vy;
-			sRenderSystem.strokePath([parent.x, parent.y,parent.x+ax*4e5, parent.y+ay*4e5],"rgba(0,255,0,0.7)")
+			var ax = (parent.velocity.x - this.lastVx)/delta,
+				ay = (parent.velocity.y - this.lastVy)/delta;
+			this.lastVx = parent.velocity.x;
+			this.lastVy = parent.velocity.y;
+			sRenderSystem.strokePath([parent.position.x, parent.position.y,
+				parent.position.x+ax*4e5, parent.position.y+ay*4e5],
+				"rgba(0,255,0,0.7)");
 		}else{
 			this.pathIndex = 0;
 		}
@@ -624,35 +627,33 @@ window.onload = function(){
 	};
 	BounceComponent.prototype.update = function(parent, delta) {
 		var coef = 0.9;
-		if(parent.x < this.ax){
-			parent.x = this.ax;
-			parent.vx = -parent.vx*coef;
+		if(parent.position.x < this.ax){
+			parent.position.x = this.ax;
+			parent.velocity.x = -parent.velocity.x*coef;
 		}
-		if(parent.x > this.bx){
-			parent.x = this.bx;
-			parent.vx = -parent.vx*coef;
+		if(parent.position.x > this.bx){
+			parent.position.x = this.bx;
+			parent.velocity.x = -parent.velocity.x*coef;
 		}
-		if(parent.y < this.ay){
-			parent.y = this.ay;
-			parent.vy = -parent.vy*coef;
+		if(parent.position.y < this.ay){
+			parent.position.y = this.ay;
+			parent.velocity.y = -parent.velocity.y*coef;
 		}
-		if(parent.y > this.by){
-			parent.y = this.by;
-			parent.vy = -parent.vy*coef;
+		if(parent.position.y > this.by){
+			parent.position.y = this.by;
+			parent.velocity.y = -parent.velocity.y*coef;
 		}
 	};
 	var GravityComponent = GameComponent.extend("GravityComponent");
 	GravityComponent.prototype.update = function(parent, delta) {
-		if(typeof parent.vy == "undefined")
-			parent.vy = 0;
-		parent.vy += 0.0001*delta;
+		if(typeof parent.velocity.y == "undefined")
+			parent.velocity.y = 0;
+		parent.velocity.y += 0.0001*delta;
 	};
 	var RandomMoveComponent = GameComponent.extend("RandomMoveComponent");
 	RandomMoveComponent.prototype.update = function(parent, delta) {
-		if(Math.random()<0.001){
-			parent.vx = Math.random()-0.5;
-			parent.vy = Math.random()-0.5;
-		}
+		if(Math.random()<0.001)
+			parent.velocity.set(Math.random()-0.5, Math.random()-0.5);
 	};
 	var PointGravityComponent = GameComponent.extend("PointGravityComponent");
 	PointGravityComponent.prototype._init = function(target) {
@@ -660,13 +661,11 @@ window.onload = function(){
 		this.vector = new Vector2();
 	};
 	PointGravityComponent.prototype.update = function(parent, delta) {
-		var vec = this.vector.set(this.target.x, this.target.y).subtract(parent.x, parent.y),
-			theta = vec.angle(),
+		var vec = this.vector.set(this.target.position).subtract(parent.position),
 			scalar = this.target.mass*delta/vec.magnitude2();
-		vec.set(Math.sin(theta),Math.cos(theta));
+		vec.normalise();
 		vec.scale(scalar);
-		parent.vx += vec.x;
-		parent.vy += vec.y;
+		parent.velocity.add(vec);
 	};
 	PointGravityComponent.referencesTest = function(object){
 		return function(testComponent){
@@ -686,10 +685,10 @@ window.onload = function(){
 			collision = false;
 		for(; i < l; i++){
 			collision = (
-					parent.x + this.halfWidth > bounds[i][0] &&
-					parent.x - this.halfWidth  < bounds[i][2] &&
-					parent.y + this.halfHeight > bounds[i][1] &&
-					parent.y - this.halfHeight < bounds[i][3]
+					parent.position.x + this.halfWidth > bounds[i][0] &&
+					parent.position.x - this.halfWidth  < bounds[i][2] &&
+					parent.position.y + this.halfHeight > bounds[i][1] &&
+					parent.position.y - this.halfHeight < bounds[i][3]
 				) ? bounds[i][4] : false;
 			if(collision)
 				break;
@@ -701,10 +700,8 @@ window.onload = function(){
 					ballManager.removeObject(parent);
 					break;
 				case "RedBall":
-					if(collision != parent){
-						parent.vx = -parent.vx*0.9;
-						parent.vy = -parent.vy*0.9;
-					}
+					if(collision != parent)
+						parent.velocity.scale(-0.9);
 					break;
 			}
 		}
@@ -739,7 +736,7 @@ window.onload = function(){
 		this.height = height;
 	};
 	SolidComponent.prototype.update = function(parent, delta) {
-		sCollisionSystem.addCollisionBounds(parent.x, parent.y, this.width, this.height, parent);
+		sCollisionSystem.addCollisionBounds(parent.position.x, parent.position.y, this.width, this.height, parent);
 	};
 	var DebugDrawBoundsComponent = GameComponent.extend("DebugDrawBoundsComponent");
 	DebugDrawBoundsComponent.prototype._init = function(context){
@@ -774,8 +771,7 @@ window.onload = function(){
 	var MoveToClickComponent = GameComponent.extend("MoveToClickComponent");
 	MoveToClickComponent.prototype.update = function(parent, delta) {
 		if(sInputSystem.hasInput){
-			parent.x = sInputSystem.lastInput.x;
-			parent.y = sInputSystem.lastInput.y;
+			parent.position.set(sInputSystem.lastInput);
 			sInputSystem.hasInput = false;
 		}
 	};
@@ -785,10 +781,11 @@ window.onload = function(){
 		this.rho = typeof rho == "number" ? rho : 0.001;
 	};
 	AirResistanceComponent.prototype.update = function(parent,delta) {
-		var mag2 = parent.vx*parent.vx + parent.vy*parent.vy,
-			theta = Math.atan2(parent.vx, parent.vy),
-			dv = mag2*this.rho*this.csa*delta,
-			dvx = Math.abs(Math.sin(theta)*dv),
+		var mag2 = parent.velocity.magnitude2(),
+			scalar = 1-mag2*this.rho*this.csa*delta;
+		parent.velocity.scale(scalar);
+		return;
+		var	dvx = Math.abs(Math.sin(theta)*dv),
 			dvy = Math.abs(Math.cos(theta)*dv);
 			// Math.abs... Math.min....
 		if(dvx > Math.abs(parent.vx))
@@ -811,20 +808,20 @@ window.onload = function(){
 	};
 	DebugDrawDataComponent.prototype.update = function(parent, delta) {
 		if(DEBUG){
-			this.maxX = Math.max(this.maxX, parent.x);
-			this.maxY = Math.max(this.maxY, parent.y);
-			this.maxVx = Math.max(this.maxVx, parent.vx);
-			this.maxVy = Math.max(this.maxVy, parent.vy);
-			this.maxV = Math.max(this.maxV,Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy));
+			this.maxX = Math.max(this.maxX, parent.position.x);
+			this.maxY = Math.max(this.maxY, parent.position.y);
+			this.maxVx = Math.max(this.maxVx, parent.velocity.x);
+			this.maxVy = Math.max(this.maxVy, parent.velocity.y);
+			this.maxV = Math.max(this.maxV,parent.velocity.magnitude());
 			this.context.fillStyle = "#999";
 			var y = 0;
 			if(typeof this.desc == "string")
 				this.context.fillText(this.desc, this.xOffset, y+=15);
-			this.context.fillText("x: " + parent.x.toFixed(), this.xOffset, y+=15);
-			this.context.fillText("y: " + parent.y.toFixed(), this.xOffset, y+=15);
-			this.context.fillText("vx: " + parent.vx.toFixed(3), this.xOffset, y+=15);
-			this.context.fillText("vy: " + parent.vy.toFixed(3), this.xOffset, y+=15);
-			this.context.fillText("v: " + Math.sqrt(parent.vx*parent.vx + parent.vy*parent.vy).toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("x: " + parent.position.x.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("y: " + parent.position.y.toFixed(), this.xOffset, y+=15);
+			this.context.fillText("vx: " + parent.velocity.x.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("vy: " + parent.velocity.y.toFixed(3), this.xOffset, y+=15);
+			this.context.fillText("v: " + parent.velocity.magnitude().toFixed(3), this.xOffset, y+=15);
 			this.context.fillText("max x: " + this.maxX.toFixed(), this.xOffset, y+=15);
 			this.context.fillText("max y: " + this.maxY.toFixed(), this.xOffset, y+=15);
 			this.context.fillText("max vx: " + this.maxVx.toFixed(3), this.xOffset, y+=15);
@@ -885,7 +882,7 @@ window.onload = function(){
 				p.set(c[i  ],c[i+1]),
 				r.set(c[i+2],c[i+3]).subtract(p),
 				q.set(this.lastX, this.lastY);
-				s.set(parent.x, parent.y).subtract(q);
+				s.set(parent.position).subtract(q);
 				q_p = q.clone().subtract(p);
 				t = q_p.cross(s) / r.cross(s);
 				u = q_p.cross(r) / r.cross(s);
@@ -895,13 +892,12 @@ window.onload = function(){
 					parent.y = this.lastY;
 					// http://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
 					n = r.normal();
-					v.set(parent.vx, parent.vy);
+					v.set(parent.velocity);
 					u = n.clone().scale(n.dot(v));
 					w = v.clone().subtract(u);
 					w.scale(f);
 					u.scale(e);
-					parent.vx = w.x - u.x;
-					parent.vy = w.y - u.y;
+					parent.velocity.set(w).subtract(u);
 					break;
 				}
 			}
@@ -910,13 +906,16 @@ window.onload = function(){
 		this.lastY = parent.y;
 	}
 	var GravitateToClickComponent = GameComponent.extend("GravitateToClickComponent");
+	GravitateToClickComponent.prototype._init = function() {
+		this.vector = new Vector2();
+	};
 	GravitateToClickComponent.prototype.update = function(parent, delta){
 		if(sInputSystem.hasInput){
-			var dx = sInputSystem.lastInput.x - parent.x,
-				dy = sInputSystem.lastInput.y - parent.y,
-				theta = Math.atan2(dx, dy);
-			parent.vx += Math.sin(theta)*0.001*delta;
-			parent.vy += Math.cos(theta)*0.001*delta;
+			var acc = this.vector;
+			acc.set(sInputSystem.lastInput).set(parent.position);
+			acc.normalise();
+			acc.scale(0.001*delta);
+			parent.velocity.add(acc);
 		}
 	}
 	var DebugDrawGraphComponentCount = 0,
@@ -981,31 +980,29 @@ window.onload = function(){
 			this.values[skip] = v;
 		}
 	};
-	DebugDrawGraphComponent.Velocity = function(object){return Math.sqrt(object.vx * object.vx + object.vy * object.vy)};
-	DebugDrawGraphComponent.VelocityAngle = function(object){return Math.atan2(object.vx, object.vy)};
+	DebugDrawGraphComponent.Velocity = function(object){return object.velocity.magnitude()};
+	DebugDrawGraphComponent.VelocityAngle = function(object){return object.velocity.angle()};
 	DebugDrawGraphComponent.Acceleration = function(){
-		var lastVx = 0, lastVy = 0;
+		var lastV = new Vector2(),
+			vector = new Vector2();
 		return function(object, delta){
-			var dvx = (object.vx - lastVx) / delta,
-				dvy = (object.vy - lastVy) / delta;
-			lastVx = lastVx;
-			lastVy = lastVy;
-			return Math.sqrt(dvx * dvx + dvy * dvy);
+			vector.set(object.velocity).subtract(lastV).scale(1/delta);
+			lastV.set(object.velocity);
+			return vector.magnitude();
 		}
 	}();
 	DebugDrawGraphComponent.AccelerationAngle = function(){
-		var lastVx = 0, lastVy = 0;
+		var lastV = new Vector2(),
+			vector = new Vector2();
 		return function(object, delta){
-			var dvx = (object.vx - lastVx) / delta,
-				dvy = (object.vy - lastVy) / delta;
-			lastVx = lastVx;
-			lastVy = lastVy;
-			return Math.atan2(dvx, dvy);
+			vector.set(object.velocity).subtract(lastV).scale(1/delta);
+			lastV.set(object.velocity);
+			return vector.angle();
 		}
 	}();
 	var CameraSystem = GameObject.extend("CameraSystem");
 	CameraSystem.prototype._init = function(initX,initY,width,height) {
-		this.lookAt = new Vector2(initX,initY);
+		GameObject.prototype._init.apply(this,arguments);
 		this.width = width;
 		this.height = height;
 		this.watchObject = null;
@@ -1018,11 +1015,7 @@ window.onload = function(){
 		this.shearMatrix = Matrix.shearMatrix(0);
 		this.worldVec = new Vector2();
 		this.screenVec = new Vector2();
-	};
-	CameraSystem.prototype.watch = function(object) {
-		if(typeof object.x == "number" &&
-			typeof object.y == "number")
-			this.watchObject = object;
+		this.pruneVec = new Vector2();
 	};
 	CameraSystem.prototype.addManagerForPruning = function(objectManager) {
 		if(objectManager instanceof GameObjectManager)
@@ -1030,11 +1023,11 @@ window.onload = function(){
 	};
 	CameraSystem.prototype.worldToScreen = function(worldX,worldY){
 		var v = this.worldVec.set(worldX, worldY);
-		v.subtract(this.lookAt);
+		v.subtract(this.position);
 		v.leftMultiply(this.shearMatrix);
 		v.leftMultiply(this.scaleMatrix);
 		v.leftMultiply(this.rotMat);
-		v.add(width / 2, height / 2)
+		v.add(width / 2, height / 2);
 		return v;
 	};
 	CameraSystem.prototype.screenToWorld = function(screenX,screenY){
@@ -1043,12 +1036,11 @@ window.onload = function(){
 		v.leftMultiply(this.rotMat.inverse());
 		v.leftMultiply(this.scaleMatrix.inverse());
 		v.leftMultiply(this.shearMatrix.inverse());
-		v.add(this.lookAt);
+		v.add(this.position);
 		return v;
 	};
 	CameraSystem.prototype.update = function(delta) {
-		if(this.watchObject)
-			this.lookAt.set(this.watchObject.x, this.watchObject.y);
+		GameObject.prototype.update.call(this, delta);
 		//this.rotation += 0.0001 * delta;
 		//this.rotMat = Matrix.rotationMatrix(-Vector2.angleBetween(suns[0],pointMasses[0]));
 		//this.angle += 0.0001 * delta;
@@ -1065,9 +1057,8 @@ window.onload = function(){
 			{
 				objs = mgr.objects;
 				for(j=0;j<objs.length;j++){
-					dx = Math.abs(objs[j].x - this.lookAt.x);
-					dy = Math.abs(objs[j].y - this.lookAt.y);
-					if(dx > width * 2 || dy > height * 2)
+					this.pruneVec.set(objs[j].position).subtract(this.position);
+					if(Math.abs(this.pruneVec.x) > width * 2 || Math.abs(this.pruneVec.y) > height * 2)
 					{
 						mgr.removeObject(objs[j]);
 						this.suspendedObjects.push({object: objs[j], parent: mgr, position: j});
@@ -1082,9 +1073,7 @@ window.onload = function(){
 		this.context = context;
 	};
 	RenderSystem.prototype.strokePath = function(path, style) {
-		var canvasX = width / 2 - sCameraSystem.lookAtX,
-			canvasY = height / 2 - sCameraSystem.lookAtY,
-			i = 2,
+		var i = 2,
 			l = path.length,
 			v;
 		this.context.strokeStyle = style;
@@ -1222,8 +1211,7 @@ window.onload = function(){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
 		var redBall = new RedBall(x,y);
-		redBall.vx = random(0.5, 0);
-		redBall.vy = random(0.5, 0);
+		redBall.velocity.set(random(0.5, 0),random(0.5, 0));
 		for(var i = 0; i < suns.length; i++){
 			redBall.addComponent(new PointGravityComponent(suns[i]));
 		}
@@ -1314,16 +1302,14 @@ window.onload = function(){
 				break;
 			case 'add-ball':
 				currentObject = addRedBall(worldDown.x, worldDown.y);
-				currentObject.vx = 0;
-				currentObject.vy = 0;
+				currentObject.velocity.set();
 				currentObject.removeComponentByName("MoveComponent");
 				currentObject.removeComponentByName("GravityComponent");
 				currentObject.removeComponentByName("AirResistanceComponent");
 				break;
 			case 'add-sun':
 				currentObject = addSun(worldDown.x, worldDown.y);
-				currentObject.vx = 0;
-				currentObject.vy = 0;
+				currentObject.velocity.set();
 				currentObject.removeComponentByName("MoveComponent");
 				break;
 		}
@@ -1338,14 +1324,12 @@ window.onload = function(){
 					var dx = p.x - mouseDown.x,
 						dy = p.y - mouseDown.y,
 						worldDown = sCameraSystem.screenToWorld(mouseDown.x, mouseDown.y);
-					currentObject.x = worldDown.x;
-					currentObject.y = worldDown.y;
-					currentObject.vx = dx / 100;
-					currentObject.vy = dy / 100;
+					currentObject.position.set(worldDown);
+					currentObject.velocity.set(dx / 100, dy / 100);
 					break;
 				case 'set-point-mass':
 				case 'add-point-mass':
-					currentObject.setPosition(worldPoint.x, worldPoint.y);
+					currentObject.setPosition(worldPoint);
 					break;
 			}
 		}
