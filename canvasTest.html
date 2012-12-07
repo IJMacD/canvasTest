@@ -678,6 +678,37 @@ window.onload = function(){
 				testComponent.target == object;
 		};
 	};
+	var GeneralRelativtyPointGravityComponent = GameComponent.extend("GeneralRelativtyPointGravityComponent");
+	GeneralRelativtyPointGravityComponent.prototype._init = function(target) {
+		this.target = target;
+		this.vectorA = new Vector2();
+		this.vectorB = new Vector2();
+	};
+	GeneralRelativtyPointGravityComponent.prototype.update = function(parent, delta) {
+		var r = this.vectorA.set(parent.position).subtract(this.target.position),
+			v = this.vectorB.set(parent.velocity),
+			G = 1,
+			M = this.target.mass,
+			r2 = r.magnitude2(),
+			r3 = Math.pow(r.magnitude(),3),
+			v1 = v.magnitude(),
+			c2 = 325334.92879081, // <- this number here actually ties all units to real world
+			newtonian = - G*M / r2,
+			relativity = - 3*G*M / (r3 * c2) * v.dot(r);
+		// just re-use r here
+		r.normalise();
+		r.scale(newtonian);
+		v.scale(relativity);
+		r.add(v);
+		r.scale(delta);
+		parent.velocity.add(r);
+	};
+	GeneralRelativtyPointGravityComponent.referencesTest = function(object){
+		return function(testComponent){
+			return testComponent instanceof GeneralRelativtyPointGravityComponent &&
+				testComponent.target == object;
+		};
+	};
 	var CollisionComponent = GameComponent.extend("CollisionComponent");
 	CollisionComponent.prototype._init = function(width, height) {
 		this.halfWidth = width / 2;
