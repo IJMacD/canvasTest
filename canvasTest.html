@@ -867,10 +867,11 @@ window.onload = function(){
 	};
 	var BackgroundSystem = GameObject.extend("BackgroundSystem");
 	BackgroundSystem.prototype._init = function(coords) {
+		GameObject.prototype._init.call(this);
 		this.coords = coords;
 	};
 	BackgroundSystem.prototype.update = function(delta) {
-		GameObject.prototype._init.call(this);
+		GameObject.prototype.update.call(this);
 		var c = this.coords,
 			i = 2,
 			l = c.length;
@@ -1135,6 +1136,13 @@ window.onload = function(){
 	RenderSystem.prototype.drawSprite = function(x,y,sprite) {
 		// body...
 	};
+	var FollowComponent = GameComponent.extend("FollowComponent");
+	FollowComponent.prototype._init = function(object) {
+		this.target = object;
+	};
+	FollowComponent.prototype.update = function(parent, delta) {
+		parent.position.set(this.target.position);
+	};
 
 
 	// -----------------
@@ -1203,7 +1211,7 @@ window.onload = function(){
 		pointMasses = [];
 	sunManager.addObject(addSun(sunX,y).setVelocity(0,0));
 	//pointMassManager.addObject(addPointMass(x,y+200));
-	sCameraSystem.watch(suns[0]);
+	sCameraSystem.addComponent(new FollowComponent(suns[0]));
 	var b;
 	x += 60;
 	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
