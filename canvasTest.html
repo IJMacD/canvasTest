@@ -678,13 +678,13 @@ window.onload = function(){
 				testComponent.target == object;
 		};
 	};
-	var GeneralRelativtyPointGravityComponent = GameComponent.extend("GeneralRelativtyPointGravityComponent");
-	GeneralRelativtyPointGravityComponent.prototype._init = function(target) {
+	var GeneralRelativityPointGravityComponent = GameComponent.extend("GeneralRelativityPointGravityComponent");
+	GeneralRelativityPointGravityComponent.prototype._init = function(target) {
 		this.target = target;
 		this.vectorA = new Vector2();
 		this.vectorB = new Vector2();
 	};
-	GeneralRelativtyPointGravityComponent.prototype.update = function(parent, delta) {
+	GeneralRelativityPointGravityComponent.prototype.update = function(parent, delta) {
 		var r = this.vectorA.set(parent.position).subtract(this.target.position),
 			v = this.vectorB.set(parent.velocity),
 			G = 1,
@@ -703,9 +703,9 @@ window.onload = function(){
 		r.scale(delta);
 		parent.velocity.add(r);
 	};
-	GeneralRelativtyPointGravityComponent.referencesTest = function(object){
+	GeneralRelativityPointGravityComponent.referencesTest = function(object){
 		return function(testComponent){
-			return testComponent instanceof GeneralRelativtyPointGravityComponent &&
+			return testComponent instanceof GeneralRelativityPointGravityComponent &&
 				testComponent.target == object;
 		};
 	};
