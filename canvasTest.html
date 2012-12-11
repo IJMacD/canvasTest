@@ -580,12 +580,16 @@ window.onload = function(){
 		sRenderSystem.fillCircle(parent.position.x+this.size*0.33,parent.position.y-this.size*0.33,this.size*0.45,"rgba(255,255,255,0.7)");
 	};
 	var DebugDrawPathComponent = GameComponent.extend("DebugDrawPathComponent");
-	DebugDrawPathComponent.prototype._init = function(){
+	DebugDrawPathComponent.prototype._init = function(object){
 		this.path = [];
 		this.pathSize = 1000;
 		this.pathIndex = 0;
 		this.lastVx = 0;
 		this.lastVy = 0;
+		if(object instanceof GameObject)
+			this.relativeTo = object.position;
+		else
+			this.relativeTo = new Vector2();
 	};
 	DebugDrawPathComponent.prototype.update = function(parent, delta) {
 		if(DEBUG){
@@ -595,16 +599,19 @@ window.onload = function(){
 			if(this.pathIndex > this.pathSize){
 				for(var i = this.pathSize-1;i>=0;i--){
 					var index = (i + skip + this.pathSize) % this.pathSize;
-					path.push(this.path[index][0],this.path[index][1]);
+					path.push(this.path[index][0]+this.relativeTo.x,this.path[index][1]+this.relativeTo.y);
 				}
 			}else{
 				for(var i = this.pathIndex-1;i>=0;i--){
-					path.push(this.path[i][0],this.path[i][1]);
+					path.push(this.path[i][0]+this.relativeTo.x,this.path[i][1]+this.relativeTo.y);
 				}
 			}
-			sRenderSystem.strokePath(path,"#CCC");
+			if(this.relativeTo.x)
+				sRenderSystem.strokePath(path,"#CCF");
+			else
+				sRenderSystem.strokePath(path,"#CCC");
 			this.pathIndex++;
-			this.path[skip] = [parent.position.x,parent.position.y];
+			this.path[skip] = [parent.position.x-this.relativeTo.x,parent.position.y-this.relativeTo.y];
 
 			// Draw Velocity
 			sRenderSystem.strokePath([parent.position.x, parent.position.y,
