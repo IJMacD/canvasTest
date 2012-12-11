@@ -1194,8 +1194,6 @@ window.onload = function(){
 		GameObject.prototype._init.call(this,x,y);
 		this.mass = random(0.5,1);
 		//this.addComponent(new BackgroundCollisionComponent());
-		this.addComponent(new DrawComponent(12, "#ff0"));
-		this.addComponent(new MoveComponent());
 	};
 
 	var chance = function(chanceIn){
@@ -1208,7 +1206,7 @@ window.onload = function(){
 		this.addComponent(new MoveComponent());
 		//this.addComponent(new BackgroundCollisionComponent());
 		this.addComponent(new DrawComponent(ballSize, "#f00"));
-		this.addComponent(new DebugDrawPathComponent());
+		//this.addComponent(new DebugDrawPathComponent());
 	};
 
 	var y = 300,x,
@@ -1216,34 +1214,17 @@ window.onload = function(){
 		suns = [],
 		redBalls = [],
 		pointMasses = [];
-	sunManager.addObject(addSun(sunX,y).setVelocity(0,0));
+	addSun(sunX-100,y).setVelocity(0,-1/Math.sqrt(400));
+	addSun(sunX+80,y).setVelocity(0,1/Math.sqrt(360));
 	//pointMassManager.addObject(addPointMass(x,y+200));
 	sCameraSystem.addComponent(new FollowComponent(suns[0]));
-	var b;
-	x += 60;
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
-	b = addRedBall(x+=20, y).setVelocity(0,1/Math.sqrt(x-sunX));
 
 	function addSun(x,y){
 		if(typeof x != "number") x = random(width, width/2);
 		if(typeof y != "number") y = random(height, height/2);
 		var massiveObject = new MassiveObject(x,y);
 		sunManager.addObject(massiveObject);
+		massiveObject.addComponent(new MoveComponent());
 		for(var i = 0; i < redBalls.length; i++)
 			redBalls[i].addComponent(new PointGravityComponent(massiveObject));
 		for(var i = 0; i < suns.length; i++){
@@ -1253,8 +1234,8 @@ window.onload = function(){
 		for(var i = 0; i < pointMasses.length; i++)
 			massiveObject.addComponent(new PointGravityComponent(pointMasses[i]));
 		massiveObject.addComponent(new DebugDrawPathComponent(ctx));
-		massiveObject.addComponent(new MoveComponent());
 		massiveObject.addComponent(new SolidComponent(24,24));
+		massiveObject.addComponent(new DrawComponent(12, "#ff0"));
 		suns.push(massiveObject);
 		return massiveObject;
 	}
@@ -1264,13 +1245,17 @@ window.onload = function(){
 		var redBall = new RedBall(x,y);
 		redBall.velocity.set(random(0.5, 0),random(0.5, 0));
 		for(var i = 0; i < suns.length; i++){
-			redBall.addComponent(new PointGravityComponent(suns[i]));
+			redBall.addComponent(new GeneralRelativityPointGravityComponent(suns[i]));
 		}
 		for(var i = 0; i < pointMasses.length; i++){
-			redBall.addComponent(new PointGravityComponent(pointMasses[i]));
+			redBall.addComponent(new GeneralRelativityPointGravityComponent(pointMasses[i]));
 		}
+		//redBall.addComponent(new WorldBounceComponent(8,8,width,height));
 		redBall.addComponent(new CollisionComponent(8,8));
 		redBall.addComponent(new DebugDrawDataComponent(ctx));
+		redBall.addComponent(new DebugDrawPathComponent());
+		redBall.addComponent(new DebugDrawPathComponent(suns[0]));
+		redBall.addComponent(new DebugDrawPathComponent(suns[1]));
 		ballManager.addObject(redBall);
 		redBalls.push(redBall);
 		return redBall;
