@@ -160,6 +160,7 @@ window.onload = function(){
 		for(var i = 0; i < pointMasses.length; i++){
 			redBall.addComponent(new GeneralRelativityPointGravityComponent(pointMasses[i]));
 		}
+		redBall.addComponent(new WorldWrapComponent(width,height));
 		//redBall.addComponent(new WorldBounceComponent(8,8,width,height));
 		redBall.addComponent(new CollisionComponent(8,8));
 		redBall.addComponent(new DebugDrawDataComponent(ctx));

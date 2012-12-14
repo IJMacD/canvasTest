@@ -580,7 +580,7 @@ WorldBounceComponent.prototype.update = function(parent, delta) {
 		parent.position.x = this.ax;
 		parent.velocity.x = -parent.velocity.x*coef;
 	}
-	if(parent.position.x > this.bx){
+	else if(parent.position.x > this.bx){
 		parent.position.x = this.bx;
 		parent.velocity.x = -parent.velocity.x*coef;
 	}
@@ -588,9 +588,30 @@ WorldBounceComponent.prototype.update = function(parent, delta) {
 		parent.position.y = this.ay;
 		parent.velocity.y = -parent.velocity.y*coef;
 	}
-	if(parent.position.y > this.by){
+	else if(parent.position.y > this.by){
 		parent.position.y = this.by;
 		parent.velocity.y = -parent.velocity.y*coef;
+	}
+};
+var WorldWrapComponent = GameComponent.extend("WorldWrapComponent");
+WorldWrapComponent.prototype._init = function(roomWidth, roomHeight) {
+	this.ax = 0;
+	this.ay = 0;
+	this.bx = roomWidth - this.ax;
+	this.by = roomHeight - this.ay;
+};
+WorldWrapComponent.prototype.update = function(parent, delta) {
+	if(parent.position.x < this.ax){
+		parent.position.x = this.bx;
+	}
+	else if(parent.position.x > this.bx){
+		parent.position.x = this.ax;
+	}
+	if(parent.position.y < this.ay){
+		parent.position.y = this.by;
+	}
+	else if(parent.position.y > this.by){
+		parent.position.y = this.ay;
 	}
 };
 var GravityComponent = GameComponent.extend("GravityComponent");
@@ -642,6 +663,7 @@ GeneralRelativityPointGravityComponent.prototype.update = function(parent, delta
 	// just re-use r here
 	r.normalise();
 	r.scale(newtonian);
+	// This line is part of GR calculations
 	v.scale(relativity);
 	r.add(v);
 	r.scale(delta);
