@@ -18,6 +18,9 @@ canvas:-moz-full-screen {
   height: 100% !important;
   width: 100% !important;
 }
+#add-balls-num {
+	width: 40px;
+}
 </style>
 </head>
 <body>
@@ -26,7 +29,10 @@ canvas:-moz-full-screen {
 	<div class="form-inline">
 		<button class="btn">Fullscreen</button>
 		<button class="btn">Add Sun</button>
-		<button class="btn">Add 10 Balls</button>
+		<div class="btn-group">
+			<button class="btn">Add Balls</button>
+			<input id="add-balls-num" type="number" value="10" />
+		</div>
 		<button class="btn">Enable Debugging</button>
 		<div class="btn-group">
 			<button class="btn">Refresh Tree</button>
@@ -215,8 +221,10 @@ window.onload = function(){
 	document.getElementsByTagName('button')[1].onclick = function(){
 		addSun();
 	};
+	var addBallsNum = document.getElementById('add-balls-num');
 	document.getElementsByTagName('button')[2].onclick = function(){
-		for(var i = 0; i < 10; i++)
+		var l = addBallsNum.value;
+		for(var i = 0; i < l; i++)
 			addRedBall();
 	};
 	function enableDEBUG(){
