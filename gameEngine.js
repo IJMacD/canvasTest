@@ -183,8 +183,10 @@ Vector2.prototype.leftMultiply = function(matrix){
 }
 Vector2.prototype.normalise = function(){
 	var mag = Math.sqrt(this.x*this.x + this.y*this.y);
-	this.x /= mag;
-	this.y /= mag;
+	if(mag != 0){
+		this.x /= mag;
+		this.y /= mag;
+	}
 	return this;
 };
 Vector2.prototype.magnitude = function(){
