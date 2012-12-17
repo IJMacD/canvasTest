@@ -514,14 +514,33 @@ MoveComponent.prototype.update = function(parent, delta) {
 	this.delta.set(parent.velocity).scale(delta);
 	parent.position.add(this.delta);
 };
-var DrawComponent = GameComponent.extend("DrawComponent");
-DrawComponent.prototype._init = function(size, colour){
+var DrawBallComponent = GameComponent.extend("DrawBallComponent");
+DrawBallComponent.prototype._init = function(size, colour){
 	this.size = size;
 	this.colour = colour;
 };
-DrawComponent.prototype.update = function(parent, delta) {
+DrawBallComponent.prototype.update = function(parent, delta) {
 	GameObject.sRenderSystem.fillCircle(parent.position.x,parent.position.y,this.size,this.colour);
 	GameObject.sRenderSystem.fillCircle(parent.position.x+this.size*0.33,parent.position.y-this.size*0.33,this.size*0.45,"rgba(255,255,255,0.7)");
+};
+var DrawPolygonComponent = GameComponent.extend("DrawPolygonComponent");
+DrawPolygonComponent.prototype._init = function(coords, colour, fill){
+	this.coords = coords;
+	this.colour = colour;
+	this.fill = fill;
+	this.vec = new Vector2();
+};
+DrawPolygonComponent.prototype.update = function(parent, delta) {
+	var i=0,
+		l = this.coords.length-1,
+		path = [];
+	for(;i<l;i+=2){
+		this.vec.set(this.coords[i],this.coords[i+1]);
+		this.vec.leftMultiply(Matrix.rotationMatrix(parent.rotation));
+		this.vec.add(parent.position);
+		path.push(this.vec.x, this.vec.y);
+	}
+	GameObject.sRenderSystem.strokePath(path,this.colour);
 };
 var DebugDrawPathComponent = GameComponent.extend("DebugDrawPathComponent");
 DebugDrawPathComponent.prototype._init = function(object){
@@ -1083,37 +1102,51 @@ CameraSystem.prototype.update = function(delta) {
 	}
 };
 var RenderSystem = GameObject.extend("RenderSystem");
-RenderSystem.prototype._init = function(context) {
-	GameObject.prototype._init.call(this);
-	this.context = context;
-};
-RenderSystem.prototype.strokePath = function(path, style) {
-	var i = 2,
-		l = path.length,
-		v;
-	this.context.strokeStyle = style;
-	this.context.beginPath();
-	v = GameObject.sCameraSystem.worldToScreen(path[0],path[1]);
-	this.context.moveTo(v.x,v.y);
-	for(;i<l-1;i+=2){
-		v = GameObject.sCameraSystem.worldToScreen(path[i],path[i+1]);
-		this.context.lineTo(v.x,v.y);
+(function(){
+	RenderSystem.prototype._init = function(context) {
+		GameObject.prototype._init.call(this);
+		this.context = context;
+	};
+	function drawPath(context, path){
+		var i = 2,
+			l = path.length,
+			v;
+		context.beginPath();
+		v = GameObject.sCameraSystem.worldToScreen(path[0],path[1]);
+		context.moveTo(v.x,v.y);
+		for(;i<l-1;i+=2){
+			v = GameObject.sCameraSystem.worldToScreen(path[i],path[i+1]);
+			context.lineTo(v.x,v.y);
+		}
 	}
-	this.context.stroke();
-};
-RenderSystem.prototype.fillCircle = function(x,y,r, style){
-	var v = GameObject.sCameraSystem.worldToScreen(x,y);
-	this.context.fillStyle = style;
-	this.context.fillCircle(v.x, v.y, r);
-};
-RenderSystem.prototype.strokeRect = function(x,y,w,h, style){
-	var v = GameObject.sCameraSystem.worldToScreen(x,y);
-	this.context.strokeStyle = style;
-	this.context.strokeRect(v.x, v.y, w, h);
-};
-RenderSystem.prototype.drawSprite = function(x,y,sprite) {
-	// body...
-};
+	RenderSystem.prototype.strokePath = function(path, style) {
+		if(typeof style == "undefined")
+			style = '#000';
+		this.context.strokeStyle = style;
+		drawPath(this.context, path);
+		this.context.stroke();
+	};
+	RenderSystem.prototype.fillPath = function(path, style) {
+		if(typeof style == "undefined")
+			style = '#000';
+		this.context.fillStyle = style;
+		drawPath(this.context, path);
+		this.context.fill();
+	};
+	RenderSystem.prototype.fillCircle = function(x,y,r, style){
+		var v = GameObject.sCameraSystem.worldToScreen(x,y);
+		this.context.fillStyle = style;
+		this.context.fillCircle(v.x, v.y, r);
+	};
+	RenderSystem.prototype.strokeRect = function(x,y,w,h, style){
+		var v = GameObject.sCameraSystem.worldToScreen(x,y);
+		this.context.strokeStyle = style;
+		this.context.strokeRect(v.x, v.y, w, h);
+	};
+	RenderSystem.prototype.drawSprite = function(x,y,sprite) {
+		// body...
+	};
+})();
 var FollowComponent = GameComponent.extend("FollowComponent");
 FollowComponent.prototype._init = function(object) {
 	this.target = object;
