@@ -768,6 +768,7 @@ InputSystem.prototype._init = function() {
 };
 InputSystem.prototype.update = function(parent, delta) {
 	//this.hasInput = false;
+	this.hasKey = Math.max(--this.hasKey,0);
 };
 InputSystem.prototype.click = function(x,y){
 	this.hasInput = true;
@@ -776,6 +777,10 @@ InputSystem.prototype.click = function(x,y){
 InputSystem.prototype.mouseDown = function(x,y){
 	this.hasInput = true;
 	this.lastInput = {x: x, y: y};
+}
+InputSystem.prototype.keyDown = function(keyCode){
+	this.hasKey = 2;
+	this.keyCode = keyCode;
 }
 var MoveToClickComponent = GameComponent.extend("MoveToClickComponent");
 MoveToClickComponent.prototype.update = function(parent, delta) {
