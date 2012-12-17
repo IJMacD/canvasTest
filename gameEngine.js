@@ -363,6 +363,7 @@ GameObject.prototype._init = function(x, y){
 	this.components = [];
 	this.position = new Vector2(x, y);
 	this.velocity = new Vector2();
+	this.rotation = 0;
 	this.toBeRemoved = [];
 };
 GameObject.prototype.addComponent = function(component){
@@ -394,6 +395,10 @@ GameObject.prototype.setPosition = function(x,y) {
 };
 GameObject.prototype.setVelocity = function(vx,vy) {
 	this.velocity.set(vx, vy);
+	return this;
+};
+GameObject.prototype.setRotation = function(th) {
+	this.rotation = th;
 	return this;
 };
 GameObject.prototype.update = function(delta){
@@ -1110,4 +1115,11 @@ FollowComponent.prototype._init = function(object) {
 };
 FollowComponent.prototype.update = function(parent, delta) {
 	parent.position.set(this.target.position);
+};
+var RotationComponent = GameComponent.extend("RotationComponent");
+RotationComponent.prototype._init = function(dth) {
+	this.rotationSpeed = dth;
+};
+RotationComponent.prototype.update = function(parent, delta) {
+	parent.setRotation(parent.rotation + this.rotationSpeed * delta);
 };
