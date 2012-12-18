@@ -756,13 +756,29 @@ CollisionSystem.prototype.addCollisionBounds = function(object, attackBounds, vu
 	if(vulnerableBounds && vulnerableBounds.length)
 		this.vulnerableBounds.push({object: object, bounds: vulnerableBounds});
 };
+/**
+ * Submit surfaces to BackgroundSystem
+ */
 var SolidComponent = GameComponent.extend("SolidComponent");
-SolidComponent.prototype._init = function(width, height) {
-	this.width = width;
-	this.height = height;
+SolidComponent.prototype._init = function(lineSegments) {
+	this.segments = lineSegments;
 };
 SolidComponent.prototype.update = function(parent, delta) {
-	GameObject.sCollisionSystem.addCollisionBounds(parent.position.x, parent.position.y, this.width, this.height, parent);
+	var lines = [],
+		i = 0,
+		l = this.segments.length,
+		j, m,
+		seg, line;
+	for(;i<l;i++){
+		seg = this.segments[i];
+		m = seg.length-1;
+		line = []
+		for(j=0;j<m;j+=2){
+			line.push(seg[j]+parent.position.x, seg[j+1]+parent.position.y);
+		}
+		lines.push(line);
+	}
+	GameObject.sBackgroundSystem.addTemporarySurfaces(lines);
 };
 var DebugDrawBoundsComponent = GameComponent.extend("DebugDrawBoundsComponent");
 DebugDrawBoundsComponent.prototype._init = function(context){
