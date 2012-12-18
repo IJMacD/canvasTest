@@ -707,57 +707,55 @@ CollisionComponent.prototype._init = function(width, height) {
 	this.halfHeight = height / 2;
 };
 CollisionComponent.prototype.update = function(parent, delta) {
-	var bounds = GameObject.sCollisionSystem.getBounds(),
-		i = 0,
-		l = bounds.length,
-		collision = false;
-	for(; i < l; i++){
-		collision = (
-				parent.position.x + this.halfWidth > bounds[i][0] &&
-				parent.position.x - this.halfWidth  < bounds[i][2] &&
-				parent.position.y + this.halfHeight > bounds[i][1] &&
-				parent.position.y - this.halfHeight < bounds[i][3]
-			) ? bounds[i][4] : false;
-		if(collision)
-			break;
-	}
-
-	if(collision){
-		switch(collision.name){
-			case "MassiveObject":
-				ballManager.removeObject(parent);
-				break;
-			case "RedBall":
-				if(collision != parent)
-					parent.velocity.scale(-0.9);
-				break;
-		}
-	}
+	var bounds = [
+		parent.position.x - this.halfWidth,
+		parent.position.y - this.halfHeight,
+		parent.position.x + this.halfWidth,
+		parent.position.y + this.halfHeight
+	];
+	GameObject.sCollisionSystem.addCollisionBounds(parent, bounds, bounds);
 };
 var CollisionSystem = GameObject.extend("CollisionSystem");
 CollisionSystem.prototype._init = function() {
 	GameObject.prototype._init.call(this);
-	this.bounds = [[],[]];
-	this.boundsCount = 2;
-	this.readIndex = 1;
-	this.writeIndex = 0;
+	this.attackBounds = [];
+	this.vulnerableBounds = [];
 };
 CollisionSystem.prototype.update = function(delta) {
 	GameObject.prototype.update.call(this,delta);
-	this.readIndex = (this.readIndex + 1) % this.boundsCount;
-	this.writeIndex = (this.writeIndex + 1) % this.boundsCount;
-	//this.boundsIndex = (this.boundsIndex + 1) % this.boundsCount;
-	this.bounds[this.writeIndex] = [];
+
+	var i = 0,
+		l = this.attackBounds.length,
+		j,
+		m = this.vulnerableBounds.length,
+		collision = false,
+		attack, vulnerable;
+	for(; i < l; i++){
+		attack = this.attackBounds[i];
+		for(j=0; j < m; j++){
+			vulnerable = this.vulnerableBounds[j];
+			if(attack.object != vulnerable.object &&
+				attack.bounds[2] >= vulnerable.bounds[0] &&
+				attack.bounds[0] <= vulnerable.bounds[2] &&
+				attack.bounds[3] >= vulnerable.bounds[1] &&
+				attack.bounds[1] <= vulnerable.bounds[3])
+			{
+				attack.object.hit(vulnerable.object);
+				vulnerable.object.hitBy(attack.object);
+				// break; here?
+			}
+		}
+	}
+	this.attackBounds = [];
+	this.vulnerableBounds = [];
 };
-CollisionSystem.prototype.addCollisionBounds = function(x,y,w,h,object){
-	this.getNextBounds().push([x-w/2,y-h/2,x+w/2,y+h/2,object]);
+CollisionSystem.prototype.addCollisionBounds = function(object, attackBounds, vulnerableBounds){
+	// These should be added sorted!!
+	if(attackBounds && attackBounds.length)
+		this.attackBounds.push({object: object, bounds: attackBounds});
+	if(vulnerableBounds && vulnerableBounds.length)
+		this.vulnerableBounds.push({object: object, bounds: vulnerableBounds});
 };
-CollisionSystem.prototype.getBounds = function(){
-	return this.bounds[this.readIndex];
-}
-CollisionSystem.prototype.getNextBounds = function(){
-	return this.bounds[this.writeIndex];
-}
 var SolidComponent = GameComponent.extend("SolidComponent");
 SolidComponent.prototype._init = function(width, height) {
 	this.width = width;
