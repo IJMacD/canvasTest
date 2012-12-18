@@ -365,6 +365,8 @@ GameObject.prototype._init = function(x, y){
 	this.velocity = new Vector2();
 	this.rotation = 0;
 	this.toBeRemoved = [];
+	this.life = 1;
+	this.team = 0;
 };
 GameObject.prototype.addComponent = function(component){
 	if(component instanceof GameComponent)
@@ -400,6 +402,14 @@ GameObject.prototype.setVelocity = function(vx,vy) {
 GameObject.prototype.setRotation = function(th) {
 	this.rotation = th;
 	return this;
+};
+GameObject.prototype.hit = function(victim) {
+	if(this.hitVictim == null)
+		this.hitVictim = victim;
+};
+GameObject.prototype.hitBy = function(attacker) {
+	if(this.attackerHit == null)
+		this.attackerHit = attacker;
 };
 GameObject.prototype.update = function(delta){
 	var i = 0,
@@ -458,15 +468,20 @@ GameObjectManager.prototype.update = function(delta){
 		l = this.objects.length,
 		m = this.objectsToBeRemoved.length,
 		j = 0;
-	for(;i<l;i++)
-		this.objects[i].update(delta);
+
+	for(i=0;i<l;i++){
+		if(this.objects[i].life)
+			this.objects[i].update(delta);
+		else
+			this.removeObject(this.objects[i]);
+	}
 
 	for(;j<m;j++){
 		i = 0;
-		l = this.objects.length;
 		for(;i<l;i++){
 			if(this.objects[i] == this.objectsToBeRemoved[j]){
 				this.objects.remove(i);
+				l--;
 				break;
 			}
 		}
