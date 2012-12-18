@@ -926,7 +926,7 @@ BackgroundSystem.prototype.update = function(delta) {
 var BackgroundCollisionComponent = GameComponent.extend("BackgroundCollisionComponent");
 BackgroundCollisionComponent.prototype.update = function(parent, delta)
 {
-	var c = sBackgroundSystem.coords,
+	var c = GameObject.sBackgroundSystem.coords,
 		i = 0,
 		l = c.length,
 		t,u,n,w,
@@ -1189,4 +1189,20 @@ RotationComponent.prototype._init = function(dth) {
 };
 RotationComponent.prototype.update = function(parent, delta) {
 	parent.setRotation(parent.rotation + this.rotationSpeed * delta);
+};
+var DecayComponent = GameComponent.extend("DecayComponent");
+DecayComponent.prototype._init = function(lifetime) {
+	this.lifetime = lifetime;
+	this.destroyOnTimeout = false;
+	this.spawnOnTimeout = null;
+};
+DecayComponent.prototype.update = function(parent, delta) {
+	this.lifetime -= delta;
+
+	if(this.lifetime < 0){
+		if(this.destroyOnTimeout)
+			parent.life = 0;
+
+		if(this.spawnOnTimeout != null){}
+	}
 };
