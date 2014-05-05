@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="http://blueimp.github.com/cdn/css/bootstrap.min.css" />
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
 <style>
 .btn-toggle input {
 	display: none;
@@ -64,7 +64,7 @@ canvas:-moz-full-screen {
 	<div id="game-tree"></div>
 </div>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="http://blueimp.github.com/cdn/js/bootstrap.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 <script src="gameEngine.js"></script>
 <script>
 DEBUG = true;
@@ -120,8 +120,8 @@ window.onload = function(){
 		GameObject.prototype._init.call(this,x,y);
 		this.mass = 0.1;
 		this.addComponent(new MoveComponent());
-		//this.addComponent(new BackgroundCollisionComponent());
-		this.addComponent(new DrawComponent(ballSize, "#f00"));
+		this.addComponent(new BackgroundCollisionComponent());
+		this.addComponent(new DrawBallComponent(ballSize, "#f00"));
 		//this.addComponent(new DebugDrawPathComponent());
 	};
 
@@ -150,8 +150,8 @@ window.onload = function(){
 		for(var i = 0; i < pointMasses.length; i++)
 			massiveObject.addComponent(new PointGravityComponent(pointMasses[i]));
 		massiveObject.addComponent(new DebugDrawPathComponent(ctx));
-		massiveObject.addComponent(new SolidComponent(24,24));
-		massiveObject.addComponent(new DrawComponent(12, "#ff0"));
+		//massiveObject.addComponent(new SolidComponent(24,24));
+		massiveObject.addComponent(new DrawBallComponent(12, "#ff0"));
 		suns.push(massiveObject);
 		return massiveObject;
 	}
@@ -186,7 +186,7 @@ window.onload = function(){
 		for(var j = 0; j < suns.length; j++)
 			suns[j].addComponent(new PointGravityComponent(pointMass));
 		//pointMass.addComponent(new MoveToClickComponent());
-		pointMass.addComponent(new DrawComponent(2, "#000"));
+		pointMass.addComponent(new DrawBallComponent(2, "#000"));
 		pointMassManager.addObject(pointMass);
 		pointMasses.push(pointMass);
 		return pointMass;

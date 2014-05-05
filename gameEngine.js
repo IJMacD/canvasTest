@@ -951,8 +951,8 @@ BackgroundCollisionComponent.prototype.update = function(parent, delta)
 			u = q_p.cross(r) / r.cross(s);
 			if(t >= 0 && t <= 1 && u >= 0 && u <= 1)
 			{
-				parent.x = this.lastX;
-				parent.y = this.lastY;
+				parent.position.x = this.lastX;
+				parent.position.y = this.lastY;
 				// http://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
 				n = r.normal();
 				v.set(parent.velocity);
@@ -965,8 +965,8 @@ BackgroundCollisionComponent.prototype.update = function(parent, delta)
 			}
 		}
 	}
-	this.lastX = parent.x;
-	this.lastY = parent.y;
+	this.lastX = parent.position.x;
+	this.lastY = parent.position.y;
 }
 var GravitateToClickComponent = GameComponent.extend("GravitateToClickComponent");
 GravitateToClickComponent.prototype._init = function() {
